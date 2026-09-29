@@ -1,18 +1,15 @@
 #!/usr/bin/env python3
 """The Movies lift driver: work/functions.json -> src/recomp/gen/.
 
-Drives pcrecomp's shared `tools/lift/generate.py` + `lift32`, the same shape as
-forcecommander's run_lift.py, whose docstrings carry the reasoning for the two
-things this adds on top of generate.py (both belong upstream, see ROADMAP.md):
+Drives pcrecomp's shared `tools/lift/generate.py` + `lift32` (pcrecomp#11),
+the same shape as forcecommander's run_lift.py:
 
-* **Closure-limited lifting.** Lift the call-graph closure from the OEP and
-  give every other catalogued function a stub that aborts naming itself, so a
-  run says exactly what to lift next instead of compiling ~12M instructions
-  before anything has run once.
-* **Extents by walking the branches** (`true_extent`). The catalog's `end` is a
-  reachability bound, not an extent, and the next entry cuts functions in half
-  at false starts. Following fallthrough and direct branches from the entry,
-  stopping at ret and at tail calls to other entries, gives the real body.
+* **Closure-limited lifting** (`generate.closure`). Lift the call-graph closure
+  from the OEP and give every other catalogued function a stub that aborts
+  naming itself, so a run says exactly what to lift next instead of compiling
+  ~12M instructions before anything has run once.
+* **Extents by walking the branches** (`generate.true_extent`), capped by
+  reach rather than the catalog's clamp; its docstring has why.
 
 Every vtable slot RTTI names is injected as an entry (work/rtti_seeds.json):
 MSVC's vtordisp adjustor thunks are reachable only through a vtable, so no
@@ -25,7 +22,6 @@ disassembler pass names them, and an unresolved slot answers eax = 0.
     py -3 run_lift.py --all
 """
 import argparse
-import collections
 import json
 import os
 import sys
@@ -39,9 +35,8 @@ sys.path.insert(0, os.path.join(_TOOLS, 'lift'))
 sys.path.insert(0, os.path.join(_TOOLS, 'pe'))
 
 from capstone import Cs, CS_ARCH_X86, CS_MODE_32          # noqa: E402
-from capstone.x86 import X86_OP_IMM                        # noqa: E402
-from generate import (linear_disassemble_function,         # noqa: E402
-                      lift_function_linear, write_chunk)
+from generate import (EXTENT_REACH, closure, find_splits, true_extent,  # noqa: E402
+                      linear_disassemble_function, lift_function_linear, write_chunk)
 from lift32 import Lifter                                  # noqa: E402
 from pe_analyze import analyze_pe, build_iat_map           # noqa: E402
 
@@ -50,93 +45,6 @@ CATALOG = os.path.join(_HERE, 'work', 'functions.json')
 SEEDS = os.path.join(_HERE, 'work', 'rtti_seeds.json')
 OUT = os.path.join(_HERE, 'src', 'recomp', 'gen')
 STATS = os.path.join(_HERE, 'work', 'lift_stats.json')
-
-REACH = 0x40000     # extent-walk cap; the largest body here is well under it
-
-
-def decode(md, code, va):
-    """md.disasm() in doubling batches: capstone's own decodes the whole buffer
-    in C before yielding the first instruction (pcrecomp disasm32.decode)."""
-    off, batch = 0, 8
-    while off < len(code):
-        n = 0
-        for ins in md.disasm(code[off:], va + off, count=batch):
-            n += 1
-            off += ins.size
-            yield ins
-        if n < batch:
-            return
-        batch = min(batch * 2, 256)
-
-
-_COND = {'je', 'jne', 'jz', 'jnz', 'ja', 'jae', 'jb', 'jbe', 'jg', 'jge', 'jl', 'jle',
-         'js', 'jns', 'jo', 'jno', 'jp', 'jnp', 'jcxz', 'jecxz', 'loop', 'loope', 'loopne'}
-
-
-def true_extent(md, code, cs, start, hard_end, entries):
-    """Highest address reached from `start` by fallthrough and direct branches.
-
-    Returns (top, clean); clean is False when no path hit a terminator. A jmp to
-    another catalogued entry is a tail call and ends the path; `entries` must
-    not contain alias entries, or an ordinary intra-function jump to one stops
-    the walk early (forcecommander, sub_00554A00).
-
-    `hard_end` is a reach cap, not the catalog's clamped end. MSVC calls a
-    function's own __finally block with a `call` into the middle of its body
-    (CRT calloc: `call 0xad5836` = _unlock, then `jne 0xad583f` to the
-    epilogue past it), so the funclet is a catalogued entry and the catalog
-    clamps the parent there. Bounded by that clamp, the epilogue fell outside
-    the body and every exit through it became an unresolved ITAIL. Fallthrough
-    into another entry still ends a path, which is what keeps a call to a
-    noreturn function from swallowing the function after it.
-    """
-    view = memoryview(code)
-    seen, work, top, clean = set(), [start], start, False
-    while work:
-        va = work.pop()
-        if va in seen or not (start <= va < hard_end):
-            continue
-        for ins in decode(md, view[va - cs:hard_end - cs], va):
-            if ins.address in seen:
-                break
-            if ins.address != va and ins.address in entries:
-                clean = True        # fell through into the next function
-                break
-            seen.add(ins.address)
-            top = max(top, ins.address + ins.size)
-            m = ins.mnemonic
-            t = None
-            if ins.operands and ins.operands[0].type == X86_OP_IMM:
-                t = ins.operands[0].imm & 0xFFFFFFFF
-            if m in ('ret', 'retn', 'retf', 'iret', 'int3', 'hlt'):
-                clean = True
-                break
-            if m == 'jmp':
-                if t is not None and start < t < hard_end and t not in entries:
-                    work.append(t)
-                else:
-                    clean = True
-                break
-            if m in _COND and t is not None and start < t < hard_end and t not in entries:
-                work.append(t)
-            if ins.address + ins.size >= hard_end:
-                break
-    return top, clean
-
-
-def closure(byaddr, roots, limit):
-    """Breadth-first call-graph closure: the startup path comes first."""
-    seen, order, q = set(), [], collections.deque(r for r in roots if r in byaddr)
-    seen.update(q)
-    while q and len(order) < limit:
-        a = q.popleft()
-        order.append(a)
-        for t in byaddr[a].get('calls_to', ()):
-            if t in byaddr and t not in seen:
-                seen.add(t)
-                q.append(t)
-    return order
-
 
 def main():
     ap = argparse.ArgumentParser()
@@ -202,6 +110,11 @@ def main():
     entries, chunk, idx, errors, dirty = [], [], 0, 0, 0
     ordered = sorted(byaddr)
     starts = {a for a in ordered if byaddr[a].get('entry_kind') != 'alias'}
+    t_split = time.time()
+    splits = find_splits(md, code, cs, ce, starts)
+    starts -= splits          # still dispatchable; just not a wall inside its parent
+    print('[*] split entries (the middle of the function before them): %d, %.0fs'
+          % (len(splits), time.time() - t_split))
     t0 = time.time()
 
     def flush(force=False):
@@ -213,10 +126,12 @@ def main():
 
     for addr in sorted(chosen):
         name = 'sub_%08X' % addr
-        end, clean = true_extent(md, code, cs, addr, min(addr + REACH, ce), starts)
+        reached = set()
+        end, clean = true_extent(md, code, cs, addr, min(addr + EXTENT_REACH, ce), starts,
+                                 reached=reached)
         dirty += not clean
         try:
-            insns, leaders = (linear_disassemble_function(md, code, cs, addr, end)
+            insns, leaders = (linear_disassemble_function(md, code, cs, addr, end, reached=reached)
                               if end > addr else ([], None))
             body = (lift_function_linear(lifter, name, insns, leaders, addr) if insns
                     else 'void %s(void) { }\n' % name)
