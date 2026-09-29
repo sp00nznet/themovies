@@ -147,7 +147,9 @@ def main():
     # A direct branch that leaves a body backward to an address nothing
     # catalogued is a tail call the catalog missed (__mtterm: jmp 0x00AD6FB7)
     # or a jump into shared code in a neighbour (hand-written x87 math:
-    # __ffexpm1 jne 0x00AE01F0). Either way the target has to be dispatchable,
+    # __ffexpm1 jne 0x00AE01F0). A direct call can name one too: the catalog
+    # dropped 0x00C10170, called directly, because a false start inside the
+    # jump table before it decoded over it. Either way the target has to be dispatchable,
     # or the RECOMP_ITAIL cannot resolve. So each round's outside targets
     # become entries and are lifted in the next round, until none are new.
     todo, added = sorted(chosen), 0
@@ -155,10 +157,10 @@ def main():
         outside = set()
         for addr in todo:
             name = 'sub_%08X' % addr
-            reached, behind = set(), set()
+            reached, behind, called = set(), set(), set()
             end, clean = true_extent(md, code, cs, addr, min(addr + EXTENT_REACH, ce), starts,
-                                     reached=reached, behind=behind)
-            outside |= {t for t in behind if t not in reached}
+                                     reached=reached, behind=behind, called=called)
+            outside |= {t for t in behind if t not in reached} | called
             dirty += not clean
             lift_one(addr, name, end, reached)
         todo = sorted(t for t in outside if cs <= t < ce and t not in byaddr)
@@ -166,7 +168,7 @@ def main():
             byaddr[t] = {'address': t, 'end': ce, 'calls_to': [], 'entry_kind': 'start'}
             chosen.add(t)
         added += len(todo)
-    print('[*] branch targets outside every body, added as entries: %d' % added)
+    print('[*] branch and call targets outside the catalog, added as entries: %d' % added)
 
     stubs = [a for a in ordered if a not in chosen]
     for a in stubs:

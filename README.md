@@ -9,21 +9,32 @@ following its shared house style (layout, CLI, harness, headless mode). It sits
 next to [bw](https://github.com/sp00nznet/bw) and [bw2](https://github.com/sp00nznet/bw2):
 same studio, same years.
 
-## Status: **v0.1.0-dev, P3 bring-up: the lifted CRT runs from the OEP in a 32-bit host. No window, no game yet.**
+## Status: **v0.1.0-dev, P3 bring-up. The whole game is lifted, boots, and renders its Lionhead intro in real time.**
 
 | Stage | State |
 |---|---|
 | P0: pick the build, identify the binaries | done: the Steam 1.2 build, `MoviesSE.exe` ([RECON.md](docs/RECON.md)) |
 | Unpack (PECompact 2.x + Steam2 wrapper) | **done, headless**: all three executables ([unpacking.md](docs/unpacking.md)) |
 | RTTI class recovery | done: 1,992 classes, 2,530 vtables, 9,227 virtual methods |
-| P1: function catalog (`disasm32`) | first pass: 67,646 functions, 63.9% byte coverage, 143 min |
-| Recovery score against IDA | **F1 57.9%**: precision 54.7%, recall 61.5%; 22,355 *invented* starts (data decoded as code). Not good enough to lift ([RECON.md](docs/RECON.md#the-first-catalog)) |
-| Lift (`run_lift.py`, closure from the OEP) | works: 300-function closure, 0 lift errors, 310K lines |
-| Host (`build/themovies.exe`, 32-bit, pcrecomp `native32`) | **builds and runs**: 327 imports bound to real Windows, lifted CRT executes ([host.md](docs/host.md)) |
-| Headless mode | `--headless`: message boxes to stderr, window creation stops the run. `--record out.mp4` needs a present path first |
-| Conformance harness | not started: nothing to measure until the lift exists |
+| Function catalog (`disasm32`) | 82,109 functions, 84.6% of `.text`, **7 minutes** (was 143) |
+| Recovery score against IDA | recall 69.7%, exact ends 91.2%. The "invented" count (35k) is mostly C++ EH funclets IDA does not call functions ([RECON.md](docs/RECON.md#the-first-catalog)) |
+| Lift (`run_lift.py --all`) | 83,468 functions, 9.8M lines of C, **0 lift errors**, 10 unresolvable ITAIL labels (none in a real function) |
+| Host (`build/themovies.exe`, 32-bit, pcrecomp `native32`) | **boots**: CRT, `WinMain`, localized text, hidden window, D3D9 device, worker threads ([host.md](docs/host.md), [bringup.md](docs/bringup.md)) |
+| Headless mode | `--headless --record out.mp4 --frames N`: hidden window, forced-windowed D3D9, every frame read back and piped to ffmpeg |
+| Conformance harness | `tools/conformance.py`: boot milestones and lift health against `conformance.json`; fails on regression |
 
-Everything above that says *done* has its real output in `docs/`.
+Every stage above has its real output in `docs/`. [bringup.md](docs/bringup.md)
+is the log of each wall and its fix; most of them were pcrecomp fixes (#5, #7,
+#10 to #15), which is half the point of this project.
+
+## Screenshots
+
+The Lionhead intro, rendered by the recompiled game and recorded headlessly
+(`--headless --record`) over RDP, at 1 s, 10 s and 19 s:
+
+| | | |
+|---|---|---|
+| ![1 s](docs/screenshots/lionhead-intro-01s.png) | ![10 s](docs/screenshots/lionhead-intro-10s.png) | ![19 s](docs/screenshots/lionhead-intro-19s.png) |
 
 ## What it found so far
 
@@ -133,15 +144,17 @@ Tools) with the C++ x86 tools, and **CMake 3.20+** with Ninja. The host is
 32-bit on purpose ([host.md](docs/host.md)).
 
 ```
-py -3 run_lift.py                 # closure from the OEP -> src\recomp\gen\ (not committed)
-build.cmd                         # vcvarsall x86 + CMake + Ninja -> build\themovies.exe
-build\themovies.exe --headless --run --watchdog 60
+py -3 run_lift.py --all           # the whole catalog -> src\recomp\gen\ (9.8M lines, not committed)
+build.cmd                         # vcvarsall amd64_x86 + CMake + Ninja -> build\themovies.exe (~15 min)
+build\themovies.exe --headless --run --watchdog 120
+py -3 tools\conformance.py        # how far it boots, against conformance.json
 ```
 
-Until pcrecomp#5 and #7 are merged, point both at a checkout that has them:
-`set PCRECOMP=..\pcrecomp-native32` for `run_lift.py`, and
-`set CMAKE_ARGS=-DPCRECOMP=G:/path/to/it` for `build.cmd`. The lifter and the
-runtime header must come from the same checkout.
+Until pcrecomp #7 and #10 to #15 are merged, use a checkout with all of them
+merged, for both the lifter and the build (they must match):
+`set PCRECOMP=..\pcrecomp-integration` before `run_lift.py`, and
+`set CMAKE_ARGS=-DPCRECOMP=G:/path/to/pcrecomp-integration` before the first
+`build.cmd` (delete `build\` if you change it later).
 
 ## Layout
 

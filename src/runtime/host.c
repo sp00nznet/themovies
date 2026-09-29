@@ -11,6 +11,7 @@
  */
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -77,6 +78,74 @@ typedef void* (WINAPI *d3dcreate9_t)(UINT sdk);
 static create_device_t g_real_create_device;
 static d3dcreate9_t g_real_d3dcreate9;
 
+/* IDirect3DDevice9::Present, counted. The frame count is the boot's last
+ * milestone (tools/conformance.py) and the hook is where --record captures. */
+typedef HRESULT (WINAPI *present_t)(void* self, const RECT* src, const RECT* dst, HWND wnd,
+                                    const RGNDATA* dirty);
+static present_t g_real_present;
+static volatile LONG g_frames;
+
+/* --record out.mp4: every presented frame, read back and piped to ffmpeg as
+ * raw BGRX. Nothing is shown anywhere, so it works over RDP (REPO_RULES 10/13).
+ * --frames N stops after N recorded frames and closes the file properly; a
+ * process killed mid-recording leaves an mp4 with no index. */
+static const char* g_record;
+static long g_record_frames;
+static FILE* g_ffmpeg;
+static IDirect3DSurface9* g_readback;
+static long g_recorded;
+
+static void record_close(void) {
+    if (g_ffmpeg) {
+        _pclose(g_ffmpeg);
+        g_ffmpeg = NULL;
+        fprintf(stderr, "[record] %ld frames -> %s\n", g_recorded, g_record);
+    }
+}
+
+static void record_frame(IDirect3DDevice9* dev) {
+    IDirect3DSurface9* bb = NULL;
+    D3DSURFACE_DESC d;
+    D3DLOCKED_RECT lr;
+    if (FAILED(dev->lpVtbl->GetBackBuffer(dev, 0, 0, D3DBACKBUFFER_TYPE_MONO, &bb))) return;
+    bb->lpVtbl->GetDesc(bb, &d);
+    if (!g_readback) {
+        char cmd[MAX_PATH * 2];
+        if (FAILED(dev->lpVtbl->CreateOffscreenPlainSurface(dev, d.Width, d.Height, d.Format,
+                                                            D3DPOOL_SYSTEMMEM, &g_readback, NULL))) {
+            bb->lpVtbl->Release(bb);
+            return;
+        }
+        _snprintf(cmd, sizeof cmd - 1, "ffmpeg -y -loglevel error -f rawvideo -pix_fmt bgr0 "
+                  "-s %ux%u -r 30 -i - -c:v libx264 -pix_fmt yuv420p \"%s\"",
+                  d.Width, d.Height, g_record);
+        g_ffmpeg = _popen(cmd, "wb");
+        fprintf(stderr, "[record] %ux%u format %d -> %s\n", d.Width, d.Height, d.Format, g_record);
+    }
+    if (g_ffmpeg && SUCCEEDED(dev->lpVtbl->GetRenderTargetData(dev, bb, g_readback)) &&
+        SUCCEEDED(g_readback->lpVtbl->LockRect(g_readback, &lr, NULL, D3DLOCK_READONLY))) {
+        for (UINT y = 0; y < d.Height; y++)
+            fwrite((const char*)lr.pBits + y * lr.Pitch, 4, d.Width, g_ffmpeg);
+        g_readback->lpVtbl->UnlockRect(g_readback);
+        g_recorded++;
+    }
+    bb->lpVtbl->Release(bb);
+    if (g_record_frames && g_recorded >= g_record_frames) {
+        record_close();
+        fflush(stderr);
+        TerminateProcess(GetCurrentProcess(), 0);
+    }
+}
+
+static HRESULT WINAPI hl_Present(void* self, const RECT* src, const RECT* dst, HWND wnd,
+                                 const RGNDATA* dirty) {
+    LONG n = InterlockedIncrement(&g_frames);
+    if (n == 1 || n == 10 || n == 100 || n % 1000 == 0)
+        fprintf(stderr, "[headless] frame %ld presented\n", n);
+    if (g_record) record_frame((IDirect3DDevice9*)self);
+    return g_real_present(self, src, dst, wnd, dirty);
+}
+
 static HRESULT WINAPI hl_CreateDevice(void* self, UINT adapter, DWORD type, HWND focus,
                                       DWORD flags, D3DPRESENT_PARAMETERS* pp, void** out) {
     fprintf(stderr, "[headless] CreateDevice adapter %u type %lu flags 0x%lX: %ux%u fmt %d x%u "
@@ -92,6 +161,14 @@ static HRESULT WINAPI hl_CreateDevice(void* self, UINT adapter, DWORD type, HWND
     pp->BackBufferFormat = D3DFMT_UNKNOWN;
     HRESULT hr = g_real_create_device(self, adapter, type, focus, flags, pp, out);
     fprintf(stderr, "[headless] CreateDevice -> 0x%08lX\n", hr);
+    if (hr == D3D_OK && !g_real_present) {
+        void** vt = *(void***)*out;
+        DWORD old;
+        g_real_present = (present_t)vt[17];                 /* IDirect3DDevice9::Present */
+        VirtualProtect(&vt[17], 4, PAGE_READWRITE, &old);
+        vt[17] = (void*)hl_Present;
+        VirtualProtect(&vt[17], 4, old, &old);
+    }
     return hr;
 }
 
@@ -169,7 +246,31 @@ static void shim_GetCommandLineA(void) {
     g_esp += 4;
 }
 
+/* SIMD the guest may use. D3DX-style code picks SSE/3DNow! paths by CPUID
+ * and IsProcessorFeaturePresent, and lift32 implements few of those
+ * instructions (16,977 unimplemented sites in this lift, nearly all SIMD), so
+ * by default the guest is told there is none and takes its x87 paths. --simd
+ * shows the host's real features. MMX stays: lift32 does implement it. */
+static int g_simd;
+
+static void shim_IsProcessorFeaturePresent(void) {
+    uint32_t f = ARG(0);
+    int simd = f == PF_XMMI_INSTRUCTIONS_AVAILABLE || f == PF_3DNOW_INSTRUCTIONS_AVAILABLE ||
+               f == PF_XMMI64_INSTRUCTIONS_AVAILABLE || f == PF_SSE3_INSTRUCTIONS_AVAILABLE ||
+               f >= 36;                /* SSSE3, SSE4.x, AVX and later */
+    g_eax = (simd && !g_simd) ? 0 : IsProcessorFeaturePresent(f);
+    g_esp += 4 + 1 * 4;
+}
+
+static void hide_simd(void) {
+    if (g_simd) return;
+    g_cpuid_edx1 &= ~((1u << 25) | (1u << 26));          /* SSE, SSE2 */
+    g_cpuid_ecx1 = 0;                                     /* SSE3 .. AVX, and the rest */
+    g_cpuid_edx_ext &= ~((1u << 31) | (1u << 30) | (1u << 22));   /* 3DNow!, 3DNow!+, MMX+ */
+}
+
 #define GUEST_SHIMS \
+    { "IsProcessorFeaturePresent", shim_IsProcessorFeaturePresent }, \
     { "GetModuleHandleA", shim_GetModuleHandleA }, \
     { "GetModuleFileNameA", shim_GetModuleFileNameA }, \
     { "GetCommandLineA", shim_GetCommandLineA }
@@ -200,23 +301,50 @@ void recomp_not_lifted(uint32_t va) {
 
 /* Added after native32's own handler, so callbacks are resolved first and
  * only real faults get here. */
+/* The report goes out through WriteFile from a static buffer, not stdio. A
+ * fault on a worker thread while another thread holds the CRT's stderr lock
+ * (the bridge traces every native call through it), or a stack overflow with
+ * no stack left for fprintf, otherwise ended the process with exit code 3 and
+ * no report at all. */
+static char g_crash_buf[4096];
+static int g_crash_len;
+static void crash_emit(const char* fmt, ...) {
+    va_list ap;
+    va_start(ap, fmt);
+    int n = _vsnprintf(g_crash_buf + g_crash_len, sizeof g_crash_buf - 1 - g_crash_len, fmt, ap);
+    va_end(ap);
+    if (n > 0) g_crash_len += n;
+}
+
 static LONG CALLBACK crash(EXCEPTION_POINTERS* ep) {
+    static volatile LONG once;
     EXCEPTION_RECORD* r = ep->ExceptionRecord;
     if ((r->ExceptionCode & 0xF0000000u) != 0xC0000000u) return EXCEPTION_CONTINUE_SEARCH;
-    fprintf(stderr, "\n=== fault 0x%08lX at 0x%p ===\n", r->ExceptionCode, r->ExceptionAddress);
+    if (InterlockedExchange(&once, 1)) TerminateProcess(GetCurrentProcess(), 3);
+    if (r->ExceptionCode == EXCEPTION_STACK_OVERFLOW) {
+        static const char msg[] = "\n=== fault 0xC00000FD: host stack overflow in lifted code ===\n";
+        DWORD w;
+        WriteFile(GetStdHandle(STD_ERROR_HANDLE), msg, sizeof msg - 1, &w, NULL);
+    }
+    crash_emit("\n=== fault 0x%08lX at 0x%p, thread %lu ===\n", r->ExceptionCode,
+               r->ExceptionAddress, GetCurrentThreadId());
     if (r->ExceptionCode == EXCEPTION_ACCESS_VIOLATION && r->NumberParameters >= 2) {
         ULONG_PTR op = r->ExceptionInformation[0];
         uint32_t at = (uint32_t)r->ExceptionInformation[1];
-        fprintf(stderr, "  %s of 0x%08X%s\n", op == 0 ? "read" : op == 1 ? "write" : "execute", at,
-                native32_in_guest(at) ? " (inside the guest image)" : at < 0x10000 ? " (null/low)" : "");
+        crash_emit("  %s of 0x%08X%s\n", op == 0 ? "read" : op == 1 ? "write" : "execute", at,
+                   native32_in_guest(at) ? " (inside the guest image)" : at < 0x10000 ? " (null/low)" : "");
     }
-    recomp_trace_flush();
-    fprintf(stderr, "  in lifted sub_%08X, last native call %s\n", g_cur_func, g_cur_import);
-    fprintf(stderr, "  eax=%08X ecx=%08X edx=%08X ebx=%08X esp=%08X ebp=%08X esi=%08X edi=%08X\n",
-            g_eax, g_ecx, g_edx, g_ebx, g_esp, g_ebp, g_esi, g_edi);
-    native32_dump_icalls(12);
-    recomp_dump_trace("fault");
-    fflush(stderr);
+    crash_emit("  in lifted sub_%08X, last native call %s\n", g_cur_func, g_cur_import);
+    crash_emit("  eax=%08X ecx=%08X edx=%08X ebx=%08X esp=%08X ebp=%08X esi=%08X edi=%08X\n",
+               g_eax, g_ecx, g_edx, g_ebx, g_esp, g_ebp, g_esi, g_edi);
+    crash_emit("last indirect calls (newest first):\n");
+    for (int i = 1; i <= 12 && i <= (int)g_icall_trace_idx; i++) {
+        uint32_t k = (g_icall_trace_idx - i) & (ICALL_TRACE_SIZE - 1);
+        const char* nm = native32_name(g_icall_trace[k]);
+        crash_emit("  0x%08X  from 0x%08X  %s\n", g_icall_trace[k], g_icall_from[k], nm ? nm : "");
+    }
+    DWORD w;
+    WriteFile(GetStdHandle(STD_ERROR_HANDLE), g_crash_buf, (DWORD)g_crash_len, &w, NULL);
     TerminateProcess(GetCurrentProcess(), 3);
     return EXCEPTION_CONTINUE_SEARCH;
 }
@@ -227,6 +355,7 @@ static DWORD WINAPI watchdog(LPVOID unused) {
     fprintf(stderr, "\n[watchdog] %lu s: in sub_%08X, last native call %s, %u indirect calls\n",
             g_watchdog_s, g_cur_func, g_cur_import, g_icall_count);
     native32_dump_icalls(8);
+    record_close();
     fflush(stderr);
     TerminateProcess(GetCurrentProcess(), 4);
     return 0;
@@ -242,19 +371,27 @@ int main(int argc, char** argv) {
         if (n) { i += n - 1; continue; }
         if (!strcmp(argv[i], "--run")) run = 1;
         else if (!strcmp(argv[i], "--headless")) g_headless = 1;
+        else if (!strcmp(argv[i], "--simd")) g_simd = 1;
+        else if (!strcmp(argv[i], "--record") && i + 1 < argc) g_record = argv[++i];
+        else if (!strcmp(argv[i], "--frames") && i + 1 < argc) g_record_frames = strtol(argv[++i], NULL, 0);
         else if (!strcmp(argv[i], "--exe") && i + 1 < argc) exe = argv[++i];
         else if (!strcmp(argv[i], "--game") && i + 1 < argc) game = argv[++i];
         else if (!strcmp(argv[i], "--watchdog") && i + 1 < argc) g_watchdog_s = strtoul(argv[++i], NULL, 0);
         else if (!strcmp(argv[i], "--native-trace")) native32_trace_native = 1;
         else if (!strcmp(argv[i], "--callbacks")) native32_trace_callbacks = 1;
         else {
-            printf("usage: themovies [--run] [--headless] [--exe work\\MoviesSE.unpacked.exe] [--game game]\n"
+            printf("usage: themovies [--run] [--headless] [--record out.mp4] [--frames N] [--simd] [--exe work\\MoviesSE.unpacked.exe] [--game game]\n"
                    "                 [--watchdog S] [--native-trace] [--callbacks]\n");
             recomp_trace_help();
             return argv[i][1] == 'h' || argv[i][2] == 'h' ? 0 : 1;
         }
     }
     GetFullPathNameA(exe, MAX_PATH, exe_full, NULL);
+    if (g_record) {                    /* the run chdirs into game\ */
+        static char rec_full[MAX_PATH];
+        GetFullPathNameA(g_record, MAX_PATH, rec_full, NULL);
+        g_record = rec_full;
+    }
     {
         char gd[MAX_PATH];
         GetFullPathNameA(game, MAX_PATH, gd, NULL);
@@ -263,6 +400,7 @@ int main(int argc, char** argv) {
     }
 
     native32_init();
+    hide_simd();
     AddVectoredExceptionHandler(0, crash);
     printf("The Movies recomp host\n  lifted functions in dispatch: %u\n", recomp_dispatch_count);
 
