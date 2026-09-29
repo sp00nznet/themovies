@@ -139,14 +139,16 @@ The backward copy does `jmp [ecx*4 + 0xacdf88]` with `ecx` from -3 to 0, so
 the arms sit below the displacement. The table reader now reads down as well
 (memcpy: 214 -> 231 arms).
 
-## 11. Worker threads overflowed their stacks — pcrecomp#7
+## 11. A silent exit 3 — the wrong first theory
 
-The process ended with exit code 3 and printed nothing. A guest thread runs
-lifted code on its native stack, and a lifted frame is several times the
-original's, so the stack size the game asked for was far too small. The report
-itself then overflowed too. native32 now gives every guest thread a 16 MB
-reserve and a stack guarantee for the fault handler, and the host's fault
-report is written with `WriteFile` from a static buffer.
+The process ended with exit code 3 and printed nothing, not even the host's
+fault report. The first theory was a stack overflow on a worker thread: a
+guest thread runs lifted code on its native stack, and a lifted frame is
+several times the original's. native32 got a built-in `CreateThread` shim
+(16 MB reserve) and a stack guarantee for fault handlers (pcrecomp#7), and the
+host's report moved to `WriteFile` from a static buffer. Those are right on
+their own, but they were not this. The native-call trace was, and its last
+lines showed the real cause, section 12.
 
 ## 12. `fucompp` did nothing — pcrecomp#15
 
