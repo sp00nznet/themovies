@@ -11,6 +11,6 @@ versions follow [SemVer](https://semver.org/).
   identified as MSVC 7.1 and packed. `docs/RECON.md`.
 - All three executables unpacked headlessly with pcrecomp's new
   `drm/emu_unpack.py` (PECompact 2.x + the Steam2 ownership check).
-  `docs/unpacking.md`. Needs pcrecomp `feat/emu-unpack`.
+  `docs/unpacking.md`. Needs pcrecomp#5.
 - RTTI recovery: 1,992 classes, 2,530 vtables, 9,227 virtual methods.
 - `Setup.cmd` / `tools/setup.ps1`: the Quick start, up to the function catalog.
