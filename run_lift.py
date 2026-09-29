@@ -21,6 +21,7 @@ disassembler pass names them, and an unresolved slot answers eax = 0.
     py -3 run_lift.py                      # OEP closure, 3000 functions
     py -3 run_lift.py --max 20000
     py -3 run_lift.py --roots 0x00AD2451,0x004A1C30
+    py -3 run_lift.py --virtual --max 60000   # plus every vtable method
     py -3 run_lift.py --all
 """
 import argparse
@@ -50,6 +51,24 @@ SEEDS = os.path.join(_HERE, 'work', 'rtti_seeds.json')
 OUT = os.path.join(_HERE, 'src', 'recomp', 'gen')
 STATS = os.path.join(_HERE, 'work', 'lift_stats.json')
 
+REACH = 0x40000     # extent-walk cap; the largest body here is well under it
+
+
+def decode(md, code, va):
+    """md.disasm() in doubling batches: capstone's own decodes the whole buffer
+    in C before yielding the first instruction (pcrecomp disasm32.decode)."""
+    off, batch = 0, 8
+    while off < len(code):
+        n = 0
+        for ins in md.disasm(code[off:], va + off, count=batch):
+            n += 1
+            off += ins.size
+            yield ins
+        if n < batch:
+            return
+        batch = min(batch * 2, 256)
+
+
 _COND = {'je', 'jne', 'jz', 'jnz', 'ja', 'jae', 'jb', 'jbe', 'jg', 'jge', 'jl', 'jle',
          'js', 'jns', 'jo', 'jno', 'jp', 'jnp', 'jcxz', 'jecxz', 'loop', 'loope', 'loopne'}
 
@@ -61,6 +80,15 @@ def true_extent(md, code, cs, start, hard_end, entries):
     another catalogued entry is a tail call and ends the path; `entries` must
     not contain alias entries, or an ordinary intra-function jump to one stops
     the walk early (forcecommander, sub_00554A00).
+
+    `hard_end` is a reach cap, not the catalog's clamped end. MSVC calls a
+    function's own __finally block with a `call` into the middle of its body
+    (CRT calloc: `call 0xad5836` = _unlock, then `jne 0xad583f` to the
+    epilogue past it), so the funclet is a catalogued entry and the catalog
+    clamps the parent there. Bounded by that clamp, the epilogue fell outside
+    the body and every exit through it became an unresolved ITAIL. Fallthrough
+    into another entry still ends a path, which is what keeps a call to a
+    noreturn function from swallowing the function after it.
     """
     view = memoryview(code)
     seen, work, top, clean = set(), [start], start, False
@@ -68,8 +96,11 @@ def true_extent(md, code, cs, start, hard_end, entries):
         va = work.pop()
         if va in seen or not (start <= va < hard_end):
             continue
-        for ins in md.disasm(view[va - cs:hard_end - cs], va):
+        for ins in decode(md, view[va - cs:hard_end - cs], va):
             if ins.address in seen:
+                break
+            if ins.address != va and ins.address in entries:
+                clean = True        # fell through into the next function
                 break
             seen.add(ins.address)
             top = max(top, ins.address + ins.size)
@@ -115,6 +146,9 @@ def main():
     ap.add_argument('--roots', default='', help='comma-separated extra root VAs')
     ap.add_argument('--max', type=int, default=3000, help='closure size cap')
     ap.add_argument('--all', action='store_true', help='lift every function')
+    ap.add_argument('--virtual', action='store_true',
+                    help='root the closure at every RTTI vtable method too: most calls '
+                         'in this binary are virtual, and the OEP alone reaches 8,053 functions')
     ap.add_argument('--split', type=int, default=400, help='functions per .c file')
     args = ap.parse_args()
     if not os.path.exists(args.catalog):
@@ -144,6 +178,8 @@ def main():
 
     entry = info.image_base + info.entry_point_rva
     roots = [entry] + [int(x, 0) for x in args.roots.split(',') if x.strip()]
+    if args.virtual and os.path.exists(SEEDS):
+        roots += sorted(e['address'] for e in json.load(open(SEEDS)))
     if args.all:
         chosen = set(byaddr)
     else:
@@ -177,7 +213,7 @@ def main():
 
     for addr in sorted(chosen):
         name = 'sub_%08X' % addr
-        end, clean = true_extent(md, code, cs, addr, min(byaddr[addr]['end'], ce) or ce, starts)
+        end, clean = true_extent(md, code, cs, addr, min(addr + REACH, ce), starts)
         dirty += not clean
         try:
             insns, leaders = (linear_disassemble_function(md, code, cs, addr, end)
