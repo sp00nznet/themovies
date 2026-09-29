@@ -1,0 +1,125 @@
+
+========================================================================
+  PE Analysis: MoviesSE.unpacked.exe
+  Size: 13,651,968 bytes
+========================================================================
+
+  Machine:       i386
+  Format:        PE32 (EXE)
+  Image Base:    0x00400000
+  Entry Point:   0x00AD2451 (RVA 0x006D2451)
+  Linker:        7.10
+  Subsystem:     Windows GUI
+  Timestamp:     2006-04-27 11:30:43 UTC (0x4450AB63)
+  Code Range:    0x00401000 - 0x010FE000 (13,619,200 bytes)
+  Data Range:    0x00401000 - 0x01105C00 (13,650,944 bytes)
+
+  Sections (3):
+    .text     VA 0x00001000  VSize 0x00CFD000  Raw 0x00000400  RSize 0x00CFD000  [CODE|IDATA|EXEC|READ|WRITE]
+    .rsrc     VA 0x00CFE000  VSize 0x00006000  Raw 0x00CFD400  RSize 0x00006000  [CODE|IDATA|EXEC|READ|WRITE]
+    .idata2   VA 0x00D04000  VSize 0x00001C00  Raw 0x00D03400  RSize 0x00001C00  [IDATA|READ|WRITE]
+
+  Imports: 330 functions from 11 DLLs
+
+    advapi32.dll (10 functions):
+      0x00D16000  RegQueryValueExA
+      0x00D16004  RegCloseKey
+      0x00D16008  GetUserNameA
+      0x00D1600C  RegCreateKeyExA
+      0x00D16010  RegSetValueExA
+      0x00D16014  RegDeleteValueA
+      0x00D16018  RegQueryValueExW
+      0x00D1601C  RegOpenKeyExW
+      0x00D16020  RegOpenKeyA
+      0x00D16024  RegOpenKeyExA
+
+    gdi32.dll (3 functions):
+      0x00D1602C  GetDeviceCaps
+      0x00D16030  DeleteObject
+      0x00D16034  GetStockObject
+
+    kernel32.dll (191 functions):
+      0x00D1603C  CreateMutexA
+      0x00D16040  GetVersion
+      0x00D16044  GetModuleFileNameA
+      0x00D16048  InterlockedIncrement
+      0x00D1604C  GetSystemPowerStatus
+      0x00D16050  CompareFileTime
+      0x00D16054  LocalFree
+      0x00D16058  FormatMessageA
+      0x00D1605C  GetFileAttributesA
+      0x00D16060  DeleteFileA
+      ... and 181 more
+
+    msacm32.dll (7 functions):
+      0x00D1633C  acmStreamOpen
+      0x00D16340  acmStreamSize
+      0x00D16344  acmStreamPrepareHeader
+      0x00D16348  acmStreamConvert
+      0x00D1634C  acmStreamUnprepareHeader
+      0x00D16350  acmStreamClose
+      0x00D16354  acmStreamReset
+
+    ole32.dll (9 functions):
+      0x00D1652C  CoFreeUnusedLibraries
+      0x00D16530  CoTaskMemFree
+      0x00D16534  CoInitializeEx
+      0x00D16538  GetRunningObjectTable
+      0x00D1653C  CreateItemMoniker
+      0x00D16540  CoInitialize
+      0x00D16544  CoCreateInstance
+      0x00D16548  CoUninitialize
+      0x00D1654C  CoTaskMemAlloc
+
+    oleaut32.dll (4 functions):
+      0x00D1635C  SysFreeString
+      0x00D16360  VariantInit
+      0x00D16364  VariantClear
+      0x00D16368  SysAllocString
+
+    shell32.dll (2 functions):
+      0x00D16370  ShellExecuteA
+      0x00D16374  SHGetSpecialFolderPathA
+
+    shfolder.dll (1 functions):
+      0x00D1637C  SHGetFolderPathW
+
+    user32.dll (42 functions):
+      0x00D16384  GetDoubleClickTime
+      0x00D16388  GetForegroundWindow
+      0x00D1638C  GetAsyncKeyState
+      0x00D16390  DispatchMessageA
+      0x00D16394  TranslateMessage
+      0x00D16398  PeekMessageA
+      0x00D1639C  DefWindowProcA
+      0x00D163A0  ValidateRect
+      0x00D163A4  PostQuitMessage
+      0x00D163A8  SetCursor
+      ... and 32 more
+
+    winmm.dll (32 functions):
+      0x00D16430  waveInGetDevCapsA
+      0x00D16434  waveInOpen
+      0x00D16438  waveInStart
+      0x00D1643C  waveInPrepareHeader
+      0x00D16440  waveInAddBuffer
+      0x00D16444  waveInUnprepareHeader
+      0x00D16448  waveInClose
+      0x00D1644C  waveInStop
+      0x00D16450  PlaySoundA
+      0x00D16454  timeGetTime
+      ... and 22 more
+
+    ws2_32.dll (29 functions):
+      0x00D164B4  getservbyname
+      0x00D164B8  htonl
+      0x00D164BC  gethostname
+      0x00D164C0  recvfrom
+      0x00D164C4  sendto
+      0x00D164C8  shutdown
+      0x00D164CC  recv
+      0x00D164D0  closesocket
+      0x00D164D4  connect
+      0x00D164D8  accept
+      ... and 19 more
+Exported to work/pe_analysis.json

@@ -1,0 +1,13 @@
+
+==============================================================================
+Sections in MoviesSE.exe
+==============================================================================
+Entry point RVA: 0x00001000
+
+name               VA     vsize   rawsize  entropy  flags
+------------------------------------------------------------------------------
+.text      0x00001000  13619200   3095040   7.9972  EXEC HIGH-ENTROPY ENTRY-POINT
+.rsrc      0x00CFE000     24576     24064   5.0526  EXEC
+
+  Protection / packing indicators:
+    - entry section '.text' is high-entropy executable (encrypted/packed loader)

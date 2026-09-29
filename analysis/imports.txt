@@ -1,0 +1,715 @@
+
+======================================================================
+ MoviesSE.unpacked.exe
+======================================================================
+
+  advapi32.dll (10 functions):
+    GetUserNameA
+    RegCloseKey
+    RegCreateKeyExA
+    RegDeleteValueA
+    RegOpenKeyA
+    RegOpenKeyExA
+    RegOpenKeyExW
+    RegQueryValueExA
+    RegQueryValueExW
+    RegSetValueExA
+
+  gdi32.dll (3 functions):
+    DeleteObject
+    GetDeviceCaps
+    GetStockObject
+
+  kernel32.dll (191 functions):
+    AllocConsole
+    CloseHandle
+    CompareFileTime
+    CompareStringA
+    CompareStringW
+    CopyFileA
+    CreateDirectoryA
+    CreateDirectoryW
+    CreateEventA
+    CreateFileA
+    CreateFileMappingA
+    CreateFileW
+    CreateMutexA
+    CreatePipe
+    CreateProcessA
+    CreateSemaphoreA
+    CreateThread
+    CreateToolhelp32Snapshot
+    DebugBreak
+    DeleteCriticalSection
+    DeleteFileA
+    DeleteFileW
+    DeviceIoControl
+    DuplicateHandle
+    EnterCriticalSection
+    EnumSystemLocalesA
+    ExitProcess
+    ExitThread
+    FatalAppExitA
+    FileTimeToLocalFileTime
+    FileTimeToSystemTime
+    FindClose
+    FindFirstFileA
+    FindFirstFileW
+    FindNextFileA
+    FindNextFileW
+    FindResourceA
+    FindResourceW
+    FlushFileBuffers
+    FormatMessageA
+    FreeConsole
+    FreeEnvironmentStringsA
+    FreeEnvironmentStringsW
+    FreeLibrary
+    GetACP
+    GetCPInfo
+    GetCommandLineA
+    GetComputerNameA
+    GetConsoleMode
+    GetCurrentDirectoryA
+    GetCurrentDirectoryW
+    GetCurrentProcess
+    GetCurrentProcessId
+    GetCurrentThread
+    GetCurrentThreadId
+    GetDateFormatA
+    GetDiskFreeSpaceExA
+    GetDiskFreeSpaceExW
+    GetDriveTypeA
+    GetDriveTypeW
+    GetEnvironmentStrings
+    GetEnvironmentStringsW
+    GetExitCodeProcess
+    GetFileAttributesA
+    GetFileAttributesW
+    GetFileSize
+    GetFileTime
+    GetFileType
+    GetFullPathNameA
+    GetFullPathNameW
+    GetLastError
+    GetLocalTime
+    GetLocaleInfoA
+    GetLocaleInfoW
+    GetModuleFileNameA
+    GetModuleHandleA
+    GetOEMCP
+    GetProcAddress
+    GetProcessAffinityMask
+    GetProcessHeap
+    GetStartupInfoA
+    GetStdHandle
+    GetStringTypeA
+    GetStringTypeW
+    GetSystemDirectoryA
+    GetSystemInfo
+    GetSystemPowerStatus
+    GetSystemTimeAsFileTime
+    GetTempFileNameA
+    GetTempPathA
+    GetThreadContext
+    GetThreadLocale
+    GetThreadPriority
+    GetTickCount
+    GetTimeFormatA
+    GetTimeZoneInformation
+    GetUserDefaultLCID
+    GetVersion
+    GetVersionExA
+    GetVersionExW
+    GlobalAlloc
+    GlobalFree
+    GlobalLock
+    GlobalMemoryStatus
+    GlobalUnlock
+    HeapAlloc
+    HeapCreate
+    HeapDestroy
+    HeapFree
+    HeapReAlloc
+    HeapSize
+    InitializeCriticalSection
+    InterlockedCompareExchange
+    InterlockedDecrement
+    InterlockedExchange
+    InterlockedIncrement
+    IsBadCodePtr
+    IsBadReadPtr
+    IsBadWritePtr
+    IsDBCSLeadByteEx
+    IsDebuggerPresent
+    IsProcessorFeaturePresent
+    IsValidCodePage
+    IsValidLocale
+    LCMapStringA
+    LCMapStringW
+    LeaveCriticalSection
+    LoadLibraryA
+    LoadResource
+    LocalAlloc
+    LocalFileTimeToFileTime
+    LocalFree
+    LockFileEx
+    LockResource
+    MapViewOfFile
+    Module32First
+    Module32Next
+    MoveFileA
+    MoveFileW
+    MulDiv
+    MultiByteToWideChar
+    OutputDebugStringA
+    QueryPerformanceCounter
+    QueryPerformanceFrequency
+    RaiseException
+    ReadFile
+    ReleaseMutex
+    ReleaseSemaphore
+    RemoveDirectoryA
+    RemoveDirectoryW
+    ResetEvent
+    RtlUnwind
+    SetConsoleCtrlHandler
+    SetConsoleMode
+    SetConsoleTitleA
+    SetCurrentDirectoryA
+    SetEndOfFile
+    SetEnvironmentVariableA
+    SetEvent
+    SetFileAttributesA
+    SetFileAttributesW
+    SetFilePointer
+    SetFileTime
+    SetHandleCount
+    SetHandleInformation
+    SetLastError
+    SetProcessAffinityMask
+    SetStdHandle
+    SetThreadPriority
+    SetUnhandledExceptionFilter
+    SizeofResource
+    Sleep
+    SystemTimeToFileTime
+    TerminateProcess
+    TlsAlloc
+    TlsFree
+    TlsGetValue
+    TlsSetValue
+    UnhandledExceptionFilter
+    UnlockFileEx
+    UnmapViewOfFile
+    VirtualAlloc
+    VirtualFree
+    VirtualProtect
+    VirtualQuery
+    WaitForMultipleObjects
+    WaitForSingleObject
+    WaitForSingleObjectEx
+    WideCharToMultiByte
+    WriteFile
+    lstrcmpiA
+
+  msacm32.dll (7 functions):
+    acmStreamClose
+    acmStreamConvert
+    acmStreamOpen
+    acmStreamPrepareHeader
+    acmStreamReset
+    acmStreamSize
+    acmStreamUnprepareHeader
+
+  ole32.dll (9 functions):
+    CoCreateInstance
+    CoFreeUnusedLibraries
+    CoInitialize
+    CoInitializeEx
+    CoTaskMemAlloc
+    CoTaskMemFree
+    CoUninitialize
+    CreateItemMoniker
+    GetRunningObjectTable
+
+  oleaut32.dll (4 functions):
+    ordinal_2
+    ordinal_6
+    ordinal_8
+    ordinal_9
+
+  shell32.dll (2 functions):
+    SHGetSpecialFolderPathA
+    ShellExecuteA
+
+  shfolder.dll (1 functions):
+    SHGetFolderPathW
+
+  user32.dll (42 functions):
+    AdjustWindowRect
+    ClientToScreen
+    ClipCursor
+    CreateWindowExA
+    DefWindowProcA
+    DispatchMessageA
+    GetAsyncKeyState
+    GetClientRect
+    GetCursorPos
+    GetDC
+    GetDoubleClickTime
+    GetForegroundWindow
+    GetKeyboardLayout
+    GetKeyboardLayoutList
+    GetQueueStatus
+    GetTitleBarInfo
+    LoadCursorA
+    LoadIconA
+    MessageBoxA
+    MessageBoxW
+    MsgWaitForMultipleObjects
+    PeekMessageA
+    PostQuitMessage
+    PostThreadMessageA
+    RegisterClassA
+    RegisterWindowMessageA
+    ReleaseCapture
+    ScreenToClient
+    SetCapture
+    SetCursor
+    SetCursorPos
+    SetRect
+    SetRectEmpty
+    SetWindowTextA
+    ShowWindow
+    ToAscii
+    ToUnicode
+    TranslateMessage
+    UnregisterClassA
+    ValidateRect
+    wsprintfA
+    wvsprintfA
+
+  winmm.dll (32 functions):
+    PlaySoundA
+    mixerClose
+    mixerGetControlDetailsA
+    mixerGetDevCapsA
+    mixerGetLineControlsA
+    mixerGetLineInfoA
+    mixerGetNumDevs
+    mixerOpen
+    mixerSetControlDetails
+    timeBeginPeriod
+    timeEndPeriod
+    timeGetTime
+    timeKillEvent
+    timeSetEvent
+    waveInAddBuffer
+    waveInClose
+    waveInGetDevCapsA
+    waveInOpen
+    waveInPrepareHeader
+    waveInReset
+    waveInStart
+    waveInStop
+    waveInUnprepareHeader
+    waveOutClose
+    waveOutGetDevCapsA
+    waveOutGetNumDevs
+    waveOutMessage
+    waveOutOpen
+    waveOutPrepareHeader
+    waveOutReset
+    waveOutUnprepareHeader
+    waveOutWrite
+
+  ws2_32.dll (29 functions):
+    ordinal_1
+    ordinal_10
+    ordinal_11
+    ordinal_111
+    ordinal_115
+    ordinal_116
+    ordinal_12
+    ordinal_13
+    ordinal_15
+    ordinal_151
+    ordinal_16
+    ordinal_17
+    ordinal_18
+    ordinal_19
+    ordinal_2
+    ordinal_20
+    ordinal_21
+    ordinal_22
+    ordinal_23
+    ordinal_3
+    ordinal_4
+    ordinal_5
+    ordinal_51
+    ordinal_52
+    ordinal_55
+    ordinal_57
+    ordinal_6
+    ordinal_8
+    ordinal_9
+
+  TOTAL: 330 imported functions
+
+
+======================================================================
+ CROSS-MODULE SUMMARY
+======================================================================
+
+advapi32.dll (10 unique functions):
+  GetUserNameA                                  <- MoviesSE.unpacked.exe
+  RegCloseKey                                   <- MoviesSE.unpacked.exe
+  RegCreateKeyExA                               <- MoviesSE.unpacked.exe
+  RegDeleteValueA                               <- MoviesSE.unpacked.exe
+  RegOpenKeyA                                   <- MoviesSE.unpacked.exe
+  RegOpenKeyExA                                 <- MoviesSE.unpacked.exe
+  RegOpenKeyExW                                 <- MoviesSE.unpacked.exe
+  RegQueryValueExA                              <- MoviesSE.unpacked.exe
+  RegQueryValueExW                              <- MoviesSE.unpacked.exe
+  RegSetValueExA                                <- MoviesSE.unpacked.exe
+
+gdi32.dll (3 unique functions):
+  DeleteObject                                  <- MoviesSE.unpacked.exe
+  GetDeviceCaps                                 <- MoviesSE.unpacked.exe
+  GetStockObject                                <- MoviesSE.unpacked.exe
+
+kernel32.dll (191 unique functions):
+  AllocConsole                                  <- MoviesSE.unpacked.exe
+  CloseHandle                                   <- MoviesSE.unpacked.exe
+  CompareFileTime                               <- MoviesSE.unpacked.exe
+  CompareStringA                                <- MoviesSE.unpacked.exe
+  CompareStringW                                <- MoviesSE.unpacked.exe
+  CopyFileA                                     <- MoviesSE.unpacked.exe
+  CreateDirectoryA                              <- MoviesSE.unpacked.exe
+  CreateDirectoryW                              <- MoviesSE.unpacked.exe
+  CreateEventA                                  <- MoviesSE.unpacked.exe
+  CreateFileA                                   <- MoviesSE.unpacked.exe
+  CreateFileMappingA                            <- MoviesSE.unpacked.exe
+  CreateFileW                                   <- MoviesSE.unpacked.exe
+  CreateMutexA                                  <- MoviesSE.unpacked.exe
+  CreatePipe                                    <- MoviesSE.unpacked.exe
+  CreateProcessA                                <- MoviesSE.unpacked.exe
+  CreateSemaphoreA                              <- MoviesSE.unpacked.exe
+  CreateThread                                  <- MoviesSE.unpacked.exe
+  CreateToolhelp32Snapshot                      <- MoviesSE.unpacked.exe
+  DebugBreak                                    <- MoviesSE.unpacked.exe
+  DeleteCriticalSection                         <- MoviesSE.unpacked.exe
+  DeleteFileA                                   <- MoviesSE.unpacked.exe
+  DeleteFileW                                   <- MoviesSE.unpacked.exe
+  DeviceIoControl                               <- MoviesSE.unpacked.exe
+  DuplicateHandle                               <- MoviesSE.unpacked.exe
+  EnterCriticalSection                          <- MoviesSE.unpacked.exe
+  EnumSystemLocalesA                            <- MoviesSE.unpacked.exe
+  ExitProcess                                   <- MoviesSE.unpacked.exe
+  ExitThread                                    <- MoviesSE.unpacked.exe
+  FatalAppExitA                                 <- MoviesSE.unpacked.exe
+  FileTimeToLocalFileTime                       <- MoviesSE.unpacked.exe
+  FileTimeToSystemTime                          <- MoviesSE.unpacked.exe
+  FindClose                                     <- MoviesSE.unpacked.exe
+  FindFirstFileA                                <- MoviesSE.unpacked.exe
+  FindFirstFileW                                <- MoviesSE.unpacked.exe
+  FindNextFileA                                 <- MoviesSE.unpacked.exe
+  FindNextFileW                                 <- MoviesSE.unpacked.exe
+  FindResourceA                                 <- MoviesSE.unpacked.exe
+  FindResourceW                                 <- MoviesSE.unpacked.exe
+  FlushFileBuffers                              <- MoviesSE.unpacked.exe
+  FormatMessageA                                <- MoviesSE.unpacked.exe
+  FreeConsole                                   <- MoviesSE.unpacked.exe
+  FreeEnvironmentStringsA                       <- MoviesSE.unpacked.exe
+  FreeEnvironmentStringsW                       <- MoviesSE.unpacked.exe
+  FreeLibrary                                   <- MoviesSE.unpacked.exe
+  GetACP                                        <- MoviesSE.unpacked.exe
+  GetCPInfo                                     <- MoviesSE.unpacked.exe
+  GetCommandLineA                               <- MoviesSE.unpacked.exe
+  GetComputerNameA                              <- MoviesSE.unpacked.exe
+  GetConsoleMode                                <- MoviesSE.unpacked.exe
+  GetCurrentDirectoryA                          <- MoviesSE.unpacked.exe
+  GetCurrentDirectoryW                          <- MoviesSE.unpacked.exe
+  GetCurrentProcess                             <- MoviesSE.unpacked.exe
+  GetCurrentProcessId                           <- MoviesSE.unpacked.exe
+  GetCurrentThread                              <- MoviesSE.unpacked.exe
+  GetCurrentThreadId                            <- MoviesSE.unpacked.exe
+  GetDateFormatA                                <- MoviesSE.unpacked.exe
+  GetDiskFreeSpaceExA                           <- MoviesSE.unpacked.exe
+  GetDiskFreeSpaceExW                           <- MoviesSE.unpacked.exe
+  GetDriveTypeA                                 <- MoviesSE.unpacked.exe
+  GetDriveTypeW                                 <- MoviesSE.unpacked.exe
+  GetEnvironmentStrings                         <- MoviesSE.unpacked.exe
+  GetEnvironmentStringsW                        <- MoviesSE.unpacked.exe
+  GetExitCodeProcess                            <- MoviesSE.unpacked.exe
+  GetFileAttributesA                            <- MoviesSE.unpacked.exe
+  GetFileAttributesW                            <- MoviesSE.unpacked.exe
+  GetFileSize                                   <- MoviesSE.unpacked.exe
+  GetFileTime                                   <- MoviesSE.unpacked.exe
+  GetFileType                                   <- MoviesSE.unpacked.exe
+  GetFullPathNameA                              <- MoviesSE.unpacked.exe
+  GetFullPathNameW                              <- MoviesSE.unpacked.exe
+  GetLastError                                  <- MoviesSE.unpacked.exe
+  GetLocalTime                                  <- MoviesSE.unpacked.exe
+  GetLocaleInfoA                                <- MoviesSE.unpacked.exe
+  GetLocaleInfoW                                <- MoviesSE.unpacked.exe
+  GetModuleFileNameA                            <- MoviesSE.unpacked.exe
+  GetModuleHandleA                              <- MoviesSE.unpacked.exe
+  GetOEMCP                                      <- MoviesSE.unpacked.exe
+  GetProcAddress                                <- MoviesSE.unpacked.exe
+  GetProcessAffinityMask                        <- MoviesSE.unpacked.exe
+  GetProcessHeap                                <- MoviesSE.unpacked.exe
+  GetStartupInfoA                               <- MoviesSE.unpacked.exe
+  GetStdHandle                                  <- MoviesSE.unpacked.exe
+  GetStringTypeA                                <- MoviesSE.unpacked.exe
+  GetStringTypeW                                <- MoviesSE.unpacked.exe
+  GetSystemDirectoryA                           <- MoviesSE.unpacked.exe
+  GetSystemInfo                                 <- MoviesSE.unpacked.exe
+  GetSystemPowerStatus                          <- MoviesSE.unpacked.exe
+  GetSystemTimeAsFileTime                       <- MoviesSE.unpacked.exe
+  GetTempFileNameA                              <- MoviesSE.unpacked.exe
+  GetTempPathA                                  <- MoviesSE.unpacked.exe
+  GetThreadContext                              <- MoviesSE.unpacked.exe
+  GetThreadLocale                               <- MoviesSE.unpacked.exe
+  GetThreadPriority                             <- MoviesSE.unpacked.exe
+  GetTickCount                                  <- MoviesSE.unpacked.exe
+  GetTimeFormatA                                <- MoviesSE.unpacked.exe
+  GetTimeZoneInformation                        <- MoviesSE.unpacked.exe
+  GetUserDefaultLCID                            <- MoviesSE.unpacked.exe
+  GetVersion                                    <- MoviesSE.unpacked.exe
+  GetVersionExA                                 <- MoviesSE.unpacked.exe
+  GetVersionExW                                 <- MoviesSE.unpacked.exe
+  GlobalAlloc                                   <- MoviesSE.unpacked.exe
+  GlobalFree                                    <- MoviesSE.unpacked.exe
+  GlobalLock                                    <- MoviesSE.unpacked.exe
+  GlobalMemoryStatus                            <- MoviesSE.unpacked.exe
+  GlobalUnlock                                  <- MoviesSE.unpacked.exe
+  HeapAlloc                                     <- MoviesSE.unpacked.exe
+  HeapCreate                                    <- MoviesSE.unpacked.exe
+  HeapDestroy                                   <- MoviesSE.unpacked.exe
+  HeapFree                                      <- MoviesSE.unpacked.exe
+  HeapReAlloc                                   <- MoviesSE.unpacked.exe
+  HeapSize                                      <- MoviesSE.unpacked.exe
+  InitializeCriticalSection                     <- MoviesSE.unpacked.exe
+  InterlockedCompareExchange                    <- MoviesSE.unpacked.exe
+  InterlockedDecrement                          <- MoviesSE.unpacked.exe
+  InterlockedExchange                           <- MoviesSE.unpacked.exe
+  InterlockedIncrement                          <- MoviesSE.unpacked.exe
+  IsBadCodePtr                                  <- MoviesSE.unpacked.exe
+  IsBadReadPtr                                  <- MoviesSE.unpacked.exe
+  IsBadWritePtr                                 <- MoviesSE.unpacked.exe
+  IsDBCSLeadByteEx                              <- MoviesSE.unpacked.exe
+  IsDebuggerPresent                             <- MoviesSE.unpacked.exe
+  IsProcessorFeaturePresent                     <- MoviesSE.unpacked.exe
+  IsValidCodePage                               <- MoviesSE.unpacked.exe
+  IsValidLocale                                 <- MoviesSE.unpacked.exe
+  LCMapStringA                                  <- MoviesSE.unpacked.exe
+  LCMapStringW                                  <- MoviesSE.unpacked.exe
+  LeaveCriticalSection                          <- MoviesSE.unpacked.exe
+  LoadLibraryA                                  <- MoviesSE.unpacked.exe
+  LoadResource                                  <- MoviesSE.unpacked.exe
+  LocalAlloc                                    <- MoviesSE.unpacked.exe
+  LocalFileTimeToFileTime                       <- MoviesSE.unpacked.exe
+  LocalFree                                     <- MoviesSE.unpacked.exe
+  LockFileEx                                    <- MoviesSE.unpacked.exe
+  LockResource                                  <- MoviesSE.unpacked.exe
+  MapViewOfFile                                 <- MoviesSE.unpacked.exe
+  Module32First                                 <- MoviesSE.unpacked.exe
+  Module32Next                                  <- MoviesSE.unpacked.exe
+  MoveFileA                                     <- MoviesSE.unpacked.exe
+  MoveFileW                                     <- MoviesSE.unpacked.exe
+  MulDiv                                        <- MoviesSE.unpacked.exe
+  MultiByteToWideChar                           <- MoviesSE.unpacked.exe
+  OutputDebugStringA                            <- MoviesSE.unpacked.exe
+  QueryPerformanceCounter                       <- MoviesSE.unpacked.exe
+  QueryPerformanceFrequency                     <- MoviesSE.unpacked.exe
+  RaiseException                                <- MoviesSE.unpacked.exe
+  ReadFile                                      <- MoviesSE.unpacked.exe
+  ReleaseMutex                                  <- MoviesSE.unpacked.exe
+  ReleaseSemaphore                              <- MoviesSE.unpacked.exe
+  RemoveDirectoryA                              <- MoviesSE.unpacked.exe
+  RemoveDirectoryW                              <- MoviesSE.unpacked.exe
+  ResetEvent                                    <- MoviesSE.unpacked.exe
+  RtlUnwind                                     <- MoviesSE.unpacked.exe
+  SetConsoleCtrlHandler                         <- MoviesSE.unpacked.exe
+  SetConsoleMode                                <- MoviesSE.unpacked.exe
+  SetConsoleTitleA                              <- MoviesSE.unpacked.exe
+  SetCurrentDirectoryA                          <- MoviesSE.unpacked.exe
+  SetEndOfFile                                  <- MoviesSE.unpacked.exe
+  SetEnvironmentVariableA                       <- MoviesSE.unpacked.exe
+  SetEvent                                      <- MoviesSE.unpacked.exe
+  SetFileAttributesA                            <- MoviesSE.unpacked.exe
+  SetFileAttributesW                            <- MoviesSE.unpacked.exe
+  SetFilePointer                                <- MoviesSE.unpacked.exe
+  SetFileTime                                   <- MoviesSE.unpacked.exe
+  SetHandleCount                                <- MoviesSE.unpacked.exe
+  SetHandleInformation                          <- MoviesSE.unpacked.exe
+  SetLastError                                  <- MoviesSE.unpacked.exe
+  SetProcessAffinityMask                        <- MoviesSE.unpacked.exe
+  SetStdHandle                                  <- MoviesSE.unpacked.exe
+  SetThreadPriority                             <- MoviesSE.unpacked.exe
+  SetUnhandledExceptionFilter                   <- MoviesSE.unpacked.exe
+  SizeofResource                                <- MoviesSE.unpacked.exe
+  Sleep                                         <- MoviesSE.unpacked.exe
+  SystemTimeToFileTime                          <- MoviesSE.unpacked.exe
+  TerminateProcess                              <- MoviesSE.unpacked.exe
+  TlsAlloc                                      <- MoviesSE.unpacked.exe
+  TlsFree                                       <- MoviesSE.unpacked.exe
+  TlsGetValue                                   <- MoviesSE.unpacked.exe
+  TlsSetValue                                   <- MoviesSE.unpacked.exe
+  UnhandledExceptionFilter                      <- MoviesSE.unpacked.exe
+  UnlockFileEx                                  <- MoviesSE.unpacked.exe
+  UnmapViewOfFile                               <- MoviesSE.unpacked.exe
+  VirtualAlloc                                  <- MoviesSE.unpacked.exe
+  VirtualFree                                   <- MoviesSE.unpacked.exe
+  VirtualProtect                                <- MoviesSE.unpacked.exe
+  VirtualQuery                                  <- MoviesSE.unpacked.exe
+  WaitForMultipleObjects                        <- MoviesSE.unpacked.exe
+  WaitForSingleObject                           <- MoviesSE.unpacked.exe
+  WaitForSingleObjectEx                         <- MoviesSE.unpacked.exe
+  WideCharToMultiByte                           <- MoviesSE.unpacked.exe
+  WriteFile                                     <- MoviesSE.unpacked.exe
+  lstrcmpiA                                     <- MoviesSE.unpacked.exe
+
+msacm32.dll (7 unique functions):
+  acmStreamClose                                <- MoviesSE.unpacked.exe
+  acmStreamConvert                              <- MoviesSE.unpacked.exe
+  acmStreamOpen                                 <- MoviesSE.unpacked.exe
+  acmStreamPrepareHeader                        <- MoviesSE.unpacked.exe
+  acmStreamReset                                <- MoviesSE.unpacked.exe
+  acmStreamSize                                 <- MoviesSE.unpacked.exe
+  acmStreamUnprepareHeader                      <- MoviesSE.unpacked.exe
+
+ole32.dll (9 unique functions):
+  CoCreateInstance                              <- MoviesSE.unpacked.exe
+  CoFreeUnusedLibraries                         <- MoviesSE.unpacked.exe
+  CoInitialize                                  <- MoviesSE.unpacked.exe
+  CoInitializeEx                                <- MoviesSE.unpacked.exe
+  CoTaskMemAlloc                                <- MoviesSE.unpacked.exe
+  CoTaskMemFree                                 <- MoviesSE.unpacked.exe
+  CoUninitialize                                <- MoviesSE.unpacked.exe
+  CreateItemMoniker                             <- MoviesSE.unpacked.exe
+  GetRunningObjectTable                         <- MoviesSE.unpacked.exe
+
+oleaut32.dll (4 unique functions):
+  ordinal_2                                     <- MoviesSE.unpacked.exe
+  ordinal_6                                     <- MoviesSE.unpacked.exe
+  ordinal_8                                     <- MoviesSE.unpacked.exe
+  ordinal_9                                     <- MoviesSE.unpacked.exe
+
+shell32.dll (2 unique functions):
+  SHGetSpecialFolderPathA                       <- MoviesSE.unpacked.exe
+  ShellExecuteA                                 <- MoviesSE.unpacked.exe
+
+shfolder.dll (1 unique functions):
+  SHGetFolderPathW                              <- MoviesSE.unpacked.exe
+
+user32.dll (42 unique functions):
+  AdjustWindowRect                              <- MoviesSE.unpacked.exe
+  ClientToScreen                                <- MoviesSE.unpacked.exe
+  ClipCursor                                    <- MoviesSE.unpacked.exe
+  CreateWindowExA                               <- MoviesSE.unpacked.exe
+  DefWindowProcA                                <- MoviesSE.unpacked.exe
+  DispatchMessageA                              <- MoviesSE.unpacked.exe
+  GetAsyncKeyState                              <- MoviesSE.unpacked.exe
+  GetClientRect                                 <- MoviesSE.unpacked.exe
+  GetCursorPos                                  <- MoviesSE.unpacked.exe
+  GetDC                                         <- MoviesSE.unpacked.exe
+  GetDoubleClickTime                            <- MoviesSE.unpacked.exe
+  GetForegroundWindow                           <- MoviesSE.unpacked.exe
+  GetKeyboardLayout                             <- MoviesSE.unpacked.exe
+  GetKeyboardLayoutList                         <- MoviesSE.unpacked.exe
+  GetQueueStatus                                <- MoviesSE.unpacked.exe
+  GetTitleBarInfo                               <- MoviesSE.unpacked.exe
+  LoadCursorA                                   <- MoviesSE.unpacked.exe
+  LoadIconA                                     <- MoviesSE.unpacked.exe
+  MessageBoxA                                   <- MoviesSE.unpacked.exe
+  MessageBoxW                                   <- MoviesSE.unpacked.exe
+  MsgWaitForMultipleObjects                     <- MoviesSE.unpacked.exe
+  PeekMessageA                                  <- MoviesSE.unpacked.exe
+  PostQuitMessage                               <- MoviesSE.unpacked.exe
+  PostThreadMessageA                            <- MoviesSE.unpacked.exe
+  RegisterClassA                                <- MoviesSE.unpacked.exe
+  RegisterWindowMessageA                        <- MoviesSE.unpacked.exe
+  ReleaseCapture                                <- MoviesSE.unpacked.exe
+  ScreenToClient                                <- MoviesSE.unpacked.exe
+  SetCapture                                    <- MoviesSE.unpacked.exe
+  SetCursor                                     <- MoviesSE.unpacked.exe
+  SetCursorPos                                  <- MoviesSE.unpacked.exe
+  SetRect                                       <- MoviesSE.unpacked.exe
+  SetRectEmpty                                  <- MoviesSE.unpacked.exe
+  SetWindowTextA                                <- MoviesSE.unpacked.exe
+  ShowWindow                                    <- MoviesSE.unpacked.exe
+  ToAscii                                       <- MoviesSE.unpacked.exe
+  ToUnicode                                     <- MoviesSE.unpacked.exe
+  TranslateMessage                              <- MoviesSE.unpacked.exe
+  UnregisterClassA                              <- MoviesSE.unpacked.exe
+  ValidateRect                                  <- MoviesSE.unpacked.exe
+  wsprintfA                                     <- MoviesSE.unpacked.exe
+  wvsprintfA                                    <- MoviesSE.unpacked.exe
+
+winmm.dll (32 unique functions):
+  PlaySoundA                                    <- MoviesSE.unpacked.exe
+  mixerClose                                    <- MoviesSE.unpacked.exe
+  mixerGetControlDetailsA                       <- MoviesSE.unpacked.exe
+  mixerGetDevCapsA                              <- MoviesSE.unpacked.exe
+  mixerGetLineControlsA                         <- MoviesSE.unpacked.exe
+  mixerGetLineInfoA                             <- MoviesSE.unpacked.exe
+  mixerGetNumDevs                               <- MoviesSE.unpacked.exe
+  mixerOpen                                     <- MoviesSE.unpacked.exe
+  mixerSetControlDetails                        <- MoviesSE.unpacked.exe
+  timeBeginPeriod                               <- MoviesSE.unpacked.exe
+  timeEndPeriod                                 <- MoviesSE.unpacked.exe
+  timeGetTime                                   <- MoviesSE.unpacked.exe
+  timeKillEvent                                 <- MoviesSE.unpacked.exe
+  timeSetEvent                                  <- MoviesSE.unpacked.exe
+  waveInAddBuffer                               <- MoviesSE.unpacked.exe
+  waveInClose                                   <- MoviesSE.unpacked.exe
+  waveInGetDevCapsA                             <- MoviesSE.unpacked.exe
+  waveInOpen                                    <- MoviesSE.unpacked.exe
+  waveInPrepareHeader                           <- MoviesSE.unpacked.exe
+  waveInReset                                   <- MoviesSE.unpacked.exe
+  waveInStart                                   <- MoviesSE.unpacked.exe
+  waveInStop                                    <- MoviesSE.unpacked.exe
+  waveInUnprepareHeader                         <- MoviesSE.unpacked.exe
+  waveOutClose                                  <- MoviesSE.unpacked.exe
+  waveOutGetDevCapsA                            <- MoviesSE.unpacked.exe
+  waveOutGetNumDevs                             <- MoviesSE.unpacked.exe
+  waveOutMessage                                <- MoviesSE.unpacked.exe
+  waveOutOpen                                   <- MoviesSE.unpacked.exe
+  waveOutPrepareHeader                          <- MoviesSE.unpacked.exe
+  waveOutReset                                  <- MoviesSE.unpacked.exe
+  waveOutUnprepareHeader                        <- MoviesSE.unpacked.exe
+  waveOutWrite                                  <- MoviesSE.unpacked.exe
+
+ws2_32.dll (29 unique functions):
+  ordinal_1                                     <- MoviesSE.unpacked.exe
+  ordinal_10                                    <- MoviesSE.unpacked.exe
+  ordinal_11                                    <- MoviesSE.unpacked.exe
+  ordinal_111                                   <- MoviesSE.unpacked.exe
+  ordinal_115                                   <- MoviesSE.unpacked.exe
+  ordinal_116                                   <- MoviesSE.unpacked.exe
+  ordinal_12                                    <- MoviesSE.unpacked.exe
+  ordinal_13                                    <- MoviesSE.unpacked.exe
+  ordinal_15                                    <- MoviesSE.unpacked.exe
+  ordinal_151                                   <- MoviesSE.unpacked.exe
+  ordinal_16                                    <- MoviesSE.unpacked.exe
+  ordinal_17                                    <- MoviesSE.unpacked.exe
+  ordinal_18                                    <- MoviesSE.unpacked.exe
+  ordinal_19                                    <- MoviesSE.unpacked.exe
+  ordinal_2                                     <- MoviesSE.unpacked.exe
+  ordinal_20                                    <- MoviesSE.unpacked.exe
+  ordinal_21                                    <- MoviesSE.unpacked.exe
+  ordinal_22                                    <- MoviesSE.unpacked.exe
+  ordinal_23                                    <- MoviesSE.unpacked.exe
+  ordinal_3                                     <- MoviesSE.unpacked.exe
+  ordinal_4                                     <- MoviesSE.unpacked.exe
+  ordinal_5                                     <- MoviesSE.unpacked.exe
+  ordinal_51                                    <- MoviesSE.unpacked.exe
+  ordinal_52                                    <- MoviesSE.unpacked.exe
+  ordinal_55                                    <- MoviesSE.unpacked.exe
+  ordinal_57                                    <- MoviesSE.unpacked.exe
+  ordinal_6                                     <- MoviesSE.unpacked.exe
+  ordinal_8                                     <- MoviesSE.unpacked.exe
+  ordinal_9                                     <- MoviesSE.unpacked.exe

@@ -1,0 +1,32 @@
+================================================================================
+PE CATALOG: game  (5 binaries)
+================================================================================
+
+================================================================================
+  APP
+================================================================================
+
+  [Movies.exe]  2,953,216 bytes
+  SHA1: ca38afe08be04169515fba4ae0001c3beaf59d6f
+  PE32 EXE (x86), GUI, linker 7.10, built 2005-09-25 20:19:49 UTC
+  imports: kernel32.dll, USER32.dll, GDI32.dll, ADVAPI32.dll, SHELL32.dll, WINMM.dll, MSACM32.dll, WS2_32.dll, SHFOLDER.dll, ole32.dll, OLEAUT32.dll
+
+  [MoviesSE.exe]  3,120,128 bytes
+  SHA1: 233db7ec22fbe59ea52a8f8bbd2096f39ab877ef
+  PE32 EXE (x86), GUI, linker 7.10, built 2006-04-27 11:30:43 UTC
+  imports: kernel32.dll, USER32.dll, GDI32.dll, ADVAPI32.dll, SHELL32.dll, WINMM.dll, MSACM32.dll, WS2_32.dll, SHFOLDER.dll, ole32.dll, OLEAUT32.dll
+
+  [StarMaker.exe]  1,070,080 bytes
+  SHA1: eea3e65e9f004903573333a2d4c4e408147b899e
+  PE32 EXE (x86), GUI, linker 7.10, built 2006-03-28 14:16:19 UTC
+  imports: kernel32.dll
+
+  [TestAppOne.exe]  3,120,128 bytes
+  SHA1: 233db7ec22fbe59ea52a8f8bbd2096f39ab877ef
+  PE32 EXE (x86), GUI, linker 7.10, built 2006-04-27 11:30:43 UTC
+  imports: kernel32.dll, USER32.dll, GDI32.dll, ADVAPI32.dll, SHELL32.dll, WINMM.dll, MSACM32.dll, WS2_32.dll, SHFOLDER.dll, ole32.dll, OLEAUT32.dll
+
+  [TestAppTwo.exe]  1,070,080 bytes
+  SHA1: eea3e65e9f004903573333a2d4c4e408147b899e
+  PE32 EXE (x86), GUI, linker 7.10, built 2006-03-28 14:16:19 UTC
+  imports: kernel32.dll
