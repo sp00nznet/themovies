@@ -128,7 +128,7 @@ needing the game.
 ## Building from source
 
 Needs the *Step by step* outputs (`work\MoviesSE.unpacked.exe`,
-`workunctions.json`) plus **Visual Studio 2022** (any edition, or the Build
+`work\functions.json`) plus **Visual Studio 2022** (any edition, or the Build
 Tools) with the C++ x86 tools, and **CMake 3.20+** with Ninja. The host is
 32-bit on purpose ([host.md](docs/host.md)).
 
