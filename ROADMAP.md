@@ -11,12 +11,16 @@
    from the game folder on a console session under offstage and record the
    main menu. That proves the dump is whole, and it is the reference every
    later run is compared against.
-3. **Lift** with `lift32` through a closure-limited `run_lift.py` from the OEP,
-   as in forcecommander, so each run says which function to lift next.
-4. **Host runtime** on `recomp32`: the 330-import bridge, then `GetProcAddress`
-   handing out real D3D9, DInput8 and DirectSound (or OpenAL). The first
-   milestone is the lifted CRT reaching `WinMain`.
-5. **Headless mode**, `--headless --record out.mp4`, as soon as there is a frame
+3. **Grow the closure to `WinMain`.** The lift driver and 32-bit host work
+   (docs/host.md). The lifted CRT runs until it leaves the closure; widen it
+   with the fixed catalog until the CRT reaches `WinMain` and then
+   `CreateWindowExA`.
+4. **An offscreen present.** D3D9 already reaches real Windows through the
+   native bridge. What `--headless` needs is a window that never shows and
+   frames captured to ffmpeg, so a run over RDP can record.
+5. **Upstream the lift driver's closure and extent walk** into pcrecomp's
+   `generate.py`: `run_lift.py` is now the second copy of forcecommander's.
+6. **Headless mode**, `--headless --record out.mp4`, as soon as there is a frame
    to record, and the conformance harness once there is a lift to measure.
 
 ## Deferred

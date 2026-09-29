@@ -9,7 +9,7 @@ following its shared house style (layout, CLI, harness, headless mode). It sits
 next to [bw](https://github.com/sp00nznet/bw) and [bw2](https://github.com/sp00nznet/bw2):
 same studio, same years.
 
-## Status: **v0.1.0-dev, P1: unpacked and cataloguing. Nothing is lifted, nothing builds or runs.**
+## Status: **v0.1.0-dev, P3 bring-up: the lifted CRT runs from the OEP in a 32-bit host. No window, no game yet.**
 
 | Stage | State |
 |---|---|
@@ -18,8 +18,9 @@ same studio, same years.
 | RTTI class recovery | done: 1,992 classes, 2,530 vtables, 9,227 virtual methods |
 | P1: function catalog (`disasm32`) | first pass: 67,646 functions, 63.9% byte coverage, 143 min |
 | Recovery score against IDA | **F1 57.9%**: precision 54.7%, recall 61.5%; 22,355 *invented* starts (data decoded as code). Not good enough to lift ([RECON.md](docs/RECON.md#the-first-catalog)) |
-| Lift / host runtime / build | not started |
-| Headless mode (`--headless --record out.mp4`) | not started: needs a host first |
+| Lift (`run_lift.py`, closure from the OEP) | works: 300-function closure, 0 lift errors, 310K lines |
+| Host (`build/themovies.exe`, 32-bit, pcrecomp `native32`) | **builds and runs**: 327 imports bound to real Windows, lifted CRT executes ([host.md](docs/host.md)) |
+| Headless mode | `--headless`: message boxes to stderr, window creation stops the run. `--record out.mp4` needs a present path first |
 | Conformance harness | not started: nothing to measure until the lift exists |
 
 Everything above that says *done* has its real output in `docs/`.
@@ -126,20 +127,38 @@ needing the game.
 
 ## Building from source
 
-Nothing to build yet: the lift and the host runtime are the next phases
-([ROADMAP.md](ROADMAP.md)). When they land this section will hold the CMake
-build, in the same shape as [forcecommander](https://github.com/sp00nznet/forcecommander).
+Needs the *Step by step* outputs (`work\MoviesSE.unpacked.exe`,
+`workunctions.json`) plus **Visual Studio 2022** (any edition, or the Build
+Tools) with the C++ x86 tools, and **CMake 3.20+** with Ninja. The host is
+32-bit on purpose ([host.md](docs/host.md)).
+
+```
+py -3 run_lift.py                 # closure from the OEP -> src
+ecomp\gen\ (not committed)
+build.cmd                         # vcvarsall x86 + CMake + Ninja -> build	hemovies.exe
+build	hemovies.exe --headless --run --watchdog 60
+```
+
+Until pcrecomp#5 and #7 are merged, point both at a checkout that has them:
+`set PCRECOMP=..\pcrecomp-native32` for `run_lift.py`, and
+`set CMAKE_ARGS=-DPCRECOMP=G:/path/to/it` for `build.cmd`. The lifter and the
+runtime header must come from the same checkout.
 
 ## Layout
 
 ```
 themovies/
   Setup.cmd          the Quick start (runs tools\setup.ps1)
+  run_lift.py        lift driver: closure from the OEP over pcrecomp's lift32
+  CMakeLists.txt, build.cmd   the 32-bit host build
+  src/runtime/host.c the host: game-specific parts on pcrecomp runtime/native32
+  src/recomp/gen/    lifted C (generated, gitignored)
   tools/setup.ps1    the same steps as "Step by step", with checks and a log
   analysis/          catalog, sections (packed), headers and imports (unpacked)
   docs/
     RECON.md         which build, the binaries, imports, RTTI namespaces, data
     unpacking.md     the packer, the Steam2 check, and the IAT that was there twice
+    host.md          why the host is 32-bit, --headless, the first run, exit codes
   game/              your install (gitignored)
   work/              unpacked executables, RTTI map, catalog (gitignored)
 ```

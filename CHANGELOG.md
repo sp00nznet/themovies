@@ -15,4 +15,8 @@ versions follow [SemVer](https://semver.org/).
 - RTTI recovery: 1,992 classes, 2,530 vtables, 9,227 virtual methods.
 - First function catalog, scored against IDA: F1 57.9% (22,355 invented
   starts from the merged section). Recorded, not yet fixed.
+- `run_lift.py`: closure-limited lift from the OEP over pcrecomp's lift32,
+  with extents by branch walking and every RTTI vtable slot as an entry.
+- The host: 32-bit, on pcrecomp's new `runtime/native32` (pcrecomp#7), with
+  `--headless`. The lifted CRT runs from the OEP. `docs/host.md`.
 - `Setup.cmd` / `tools/setup.ps1`: the Quick start, up to the function catalog.
