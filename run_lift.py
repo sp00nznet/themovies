@@ -124,15 +124,15 @@ def main():
             idx += 1
             chunk = []
 
-    for addr in sorted(chosen):
-        name = 'sub_%08X' % addr
-        reached = set()
-        end, clean = true_extent(md, code, cs, addr, min(addr + EXTENT_REACH, ce), starts,
-                                 reached=reached)
-        dirty += not clean
+    def lift_one(addr, name, end, reached):
+        nonlocal errors
+
         try:
-            insns, leaders = (linear_disassemble_function(md, code, cs, addr, end, reached=reached)
+            lo = min(reached) if reached else addr   # a chunk can sit below the entry
+            insns, leaders = (linear_disassemble_function(md, code, cs, lo, end, reached=reached)
                               if end > addr else ([], None))
+            if leaders is not None:
+                leaders.add(addr)
             body = (lift_function_linear(lifter, name, insns, leaders, addr) if insns
                     else 'void %s(void) { }\n' % name)
         except Exception as e:                      # noqa: BLE001 -- counted, not hidden
@@ -143,6 +143,30 @@ def main():
         if len(chunk) >= args.split:
             flush()
             print('[*]   %d/%d (%d err)' % (len(entries), len(chosen), errors), flush=True)
+
+    # A direct branch that leaves a body backward to an address nothing
+    # catalogued is a tail call the catalog missed (__mtterm: jmp 0x00AD6FB7)
+    # or a jump into shared code in a neighbour (hand-written x87 math:
+    # __ffexpm1 jne 0x00AE01F0). Either way the target has to be dispatchable,
+    # or the RECOMP_ITAIL cannot resolve. So each round's outside targets
+    # become entries and are lifted in the next round, until none are new.
+    todo, added = sorted(chosen), 0
+    while todo:
+        outside = set()
+        for addr in todo:
+            name = 'sub_%08X' % addr
+            reached, behind = set(), set()
+            end, clean = true_extent(md, code, cs, addr, min(addr + EXTENT_REACH, ce), starts,
+                                     reached=reached, behind=behind)
+            outside |= {t for t in behind if t not in reached}
+            dirty += not clean
+            lift_one(addr, name, end, reached)
+        todo = sorted(t for t in outside if cs <= t < ce and t not in byaddr)
+        for t in todo:
+            byaddr[t] = {'address': t, 'end': ce, 'calls_to': [], 'entry_kind': 'start'}
+            chosen.add(t)
+        added += len(todo)
+    print('[*] branch targets outside every body, added as entries: %d' % added)
 
     stubs = [a for a in ordered if a not in chosen]
     for a in stubs:
