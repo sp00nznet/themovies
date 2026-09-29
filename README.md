@@ -133,10 +133,9 @@ Tools) with the C++ x86 tools, and **CMake 3.20+** with Ninja. The host is
 32-bit on purpose ([host.md](docs/host.md)).
 
 ```
-py -3 run_lift.py                 # closure from the OEP -> src
-ecomp\gen\ (not committed)
-build.cmd                         # vcvarsall x86 + CMake + Ninja -> build	hemovies.exe
-build	hemovies.exe --headless --run --watchdog 60
+py -3 run_lift.py                 # closure from the OEP -> src\recomp\gen\ (not committed)
+build.cmd                         # vcvarsall x86 + CMake + Ninja -> build\themovies.exe
+build\themovies.exe --headless --run --watchdog 60
 ```
 
 Until pcrecomp#5 and #7 are merged, point both at a checkout that has them:
