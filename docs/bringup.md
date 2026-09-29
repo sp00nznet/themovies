@@ -180,3 +180,11 @@ hidden window, the D3D9 device, worker threads, and the render loop.
 
 The frames are the Lionhead intro (README, Screenshots). Left to run, it
 presents 6,000+ frames in four minutes with no fault.
+
+## 14. The main menu
+
+Recording 3,000 frames (`--record work\rec\long.mp4 --frames 3000`, 100 s at
+30 fps) shows the whole startup with no input: the Lionhead particle intro,
+the Lionhead logo, the ATI logo, and the S&E main menu with its cursor (README,
+Screenshots). No unresolved ICALL or ITAIL is printed on the way. The menu's
+3D backdrop is missing: black where the original draws a scene.

@@ -2,26 +2,21 @@
 
 ## Next
 
-1. **Fix the catalog before lifting it.** The first pass scores F1 57.9% against
-   IDA, and most of the error is 22,355 *invented* starts: data decoded as
-   code, because the packer merged `.rdata` and `.data` into one executable
-   section. Either restore the section split from the original layout, or
-   drive `disasm32` from IDA's code map (`ida_export.py`). Re-score after.
-2. **Check the unpacked executable natively.** Run `work\MoviesSE.unpacked.exe`
-   from the game folder on a console session under offstage and record the
-   main menu. That proves the dump is whole, and it is the reference every
-   later run is compared against.
-3. **Grow the closure to `WinMain`.** The lift driver and 32-bit host work
-   (docs/host.md). The lifted CRT runs until it leaves the closure; widen it
-   with the fixed catalog until the CRT reaches `WinMain` and then
-   `CreateWindowExA`.
-4. **An offscreen present.** D3D9 already reaches real Windows through the
-   native bridge. What `--headless` needs is a window that never shows and
-   frames captured to ffmpeg, so a run over RDP can record.
-5. **Upstream the lift driver's closure and extent walk** into pcrecomp's
-   `generate.py`: `run_lift.py` is now the second copy of forcecommander's.
-6. **Headless mode**, `--headless --record out.mp4`, as soon as there is a frame
-   to record, and the conformance harness once there is a lift to measure.
+1. **The main menu's black backdrop.** The original shows a 3D scene behind the
+   menu; find whether it is not rendered, rendered and lost, or waiting on
+   something (streaming, a thread, a timer).
+2. **Input.** Scripted clicks and keys for headless runs (`--click x,y@s`,
+   `--key vk@s`, gunman's shape) so a recording can go past the menu, and
+   conformance milestones past it (a new game, the studio lot).
+3. **Upstreaming.** pcrecomp #7, #10 to #15 are open; once they merge, drop the
+   integration tree from the README. forcecommander and prey carry their own
+   copies of the extent walk, now fixed in `generate.py`.
+4. **Native reference run.** Run `work\MoviesSE.unpacked.exe` itself on a
+   console session under offstage and record the same 100 seconds, as the
+   ground truth to compare frames against.
+5. **SIMD.** The lift runs with SSE/3DNow! hidden from the guest. Implementing
+   the ~13,700 SIMD sites in lift32 (or lifting with lift32_cpu, which has
+   them) would let `--simd` run the paths the game uses on real hardware.
 
 ## Deferred
 
