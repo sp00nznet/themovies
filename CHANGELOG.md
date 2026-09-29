@@ -13,4 +13,6 @@ versions follow [SemVer](https://semver.org/).
   `drm/emu_unpack.py` (PECompact 2.x + the Steam2 ownership check).
   `docs/unpacking.md`. Needs pcrecomp#5.
 - RTTI recovery: 1,992 classes, 2,530 vtables, 9,227 virtual methods.
+- First function catalog, scored against IDA: F1 57.9% (22,355 invented
+  starts from the merged section). Recorded, not yet fixed.
 - `Setup.cmd` / `tools/setup.ps1`: the Quick start, up to the function catalog.

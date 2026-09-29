@@ -16,8 +16,8 @@ same studio, same years.
 | P0: pick the build, identify the binaries | done: the Steam 1.2 build, `MoviesSE.exe` ([RECON.md](docs/RECON.md)) |
 | Unpack (PECompact 2.x + Steam2 wrapper) | **done, headless**: all three executables ([unpacking.md](docs/unpacking.md)) |
 | RTTI class recovery | done: 1,992 classes, 2,530 vtables, 9,227 virtual methods |
-| P1: function catalog (`disasm32`) | running: 41,598 candidates |
-| Recovery score against IDA | not yet |
+| P1: function catalog (`disasm32`) | first pass: 67,646 functions, 63.9% byte coverage, 143 min |
+| Recovery score against IDA | **F1 57.9%**: precision 54.7%, recall 61.5%; 22,355 *invented* starts (data decoded as code). Not good enough to lift ([RECON.md](docs/RECON.md#the-first-catalog)) |
 | Lift / host runtime / build | not started |
 | Headless mode (`--headless --record out.mp4`) | not started: needs a host first |
 | Conformance harness | not started: nothing to measure until the lift exists |

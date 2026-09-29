@@ -2,8 +2,11 @@
 
 ## Next
 
-1. **Finish the catalog and score it.** `disasm32` seeded from RTTI, scored with
-   `score_recovery.py` against IDA's function list, before anything is lifted.
+1. **Fix the catalog before lifting it.** The first pass scores F1 57.9% against
+   IDA, and most of the error is 22,355 *invented* starts: data decoded as
+   code, because the packer merged `.rdata` and `.data` into one executable
+   section. Either restore the section split from the original layout, or
+   drive `disasm32` from IDA's code map (`ida_export.py`). Re-score after.
 2. **Check the unpacked executable natively.** Run `work\MoviesSE.unpacked.exe`
    from the game folder on a console session under offstage and record the
    main menu. That proves the dump is whole, and it is the reference every

@@ -114,6 +114,42 @@ meshes and scenes, the S&E add-on, `PATCH1.pak`), plus loose `.ogg`+`.cue` audio
 needs decoding for a recompilation: the recompiled game reads it the way the
 original does.
 
+## The first catalog
+
+`disasm32.py` seeded with the 9,227 RTTI methods, 143 minutes:
+
+```
+[*] Successfully disassembled 77517 functions (7 discovery rounds)
+[*] Dropped 9871 entries that are not instruction boundaries
+[*] Clamped 13103 function extents to the next function start
+[*] Functions: 67646  (thunks=117, leaves=35130)
+[*] Instructions: 11,950,614
+[*] Byte coverage: 8,705,899 / 13,619,200 (63.9% of code range)
+```
+
+Scored against IDA 9.1 (`ida_funcs.py`, 38 minutes, 54,665 functions of which
+2,881 are FLIRT-identified library code):
+
+```
+  true positives      33,614
+  false positives     27,888
+      split            5,533  (inside a known function)
+      invented        22,355  (outside every known function)
+  false negatives     21,051
+  precision   54.66%
+  recall      61.49%
+  F1          57.87%
+  function ends: exact 29,711 (88.39%)
+```
+
+IDA is a second opinion here, not ground truth: there are no symbols. But the
+shape of the error is clear. Most of the false positives are **invented**,
+which means starts outside any function IDA found: data decoded as code. The unpacked
+image has one RWX section spanning code, read-only data and data, so
+`disasm32` has no section boundary to stop it. Where it does find a function,
+it gets the end right 88% of the time. This catalog is not lifted as it stands
+([ROADMAP.md](../ROADMAP.md)).
+
 ## Where this points
 
 - The target is one 32-bit MSVC 7.1 executable, so the pipeline is pcrecomp's
