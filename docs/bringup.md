@@ -256,3 +256,38 @@ the shim took that as the new target, so the cursor walked straight back.
 
 The lot comes up at t=165 s and the calendar runs (Jan to Apr 1960 by
 t=300). Visible next: parts of the backdrop past the lot render black.
+
+## 17. The move to pcrecomp main, and a pinned cursor
+
+Every toolkit PR this port needed (#5 to #21) merged, so the lift moved off
+the local integration branch onto `main`. The catalog came out the same bar
+one entry (a guess straddling `0x00C10170`, which #19 now drops), the lift
+had 0 errors, and conformance stayed 7/7. But the scripted run stopped at the
+menu: the first `--move` sent the cursor to (0,0) and every click missed.
+
+`--watch32 0x104ccf0` (the cursor's X accumulator): `32.0 -> 0.0` on a +445
+delta, where the old build went to 699.5. The axis handler clamps at zero:
+
+```
+fcomp dword ptr [0xd16588]     ; 0.0
+fnstsw ax
+test ah, 5
+jp   not_negative              ; MSVC's `x < 0.0`
+mov  dword ptr [0x104ccf0], 0
+```
+
+and the lift of the `jp` was `if (/* no flag state for jp */ _cf)`. The
+integration branch predated pcrecomp #9, which drops the lifter's static flag
+state at every label so a join point reads the flag kind at runtime. In a
+function with an unresolved indirect jump every instruction is a label, and
+the runtime evaluator had no parity. `test` clears `_cf`, so the branch was
+always "negative". 274 sites in this lift.
+
+pcrecomp #22 gives the runtime parity: a narrow flag setter records its
+left-align shift in the kind, so PF can be read off the right byte (difftest
+202/202, up from 188/200 with 12 known). Re-lifted with it: 0 such sites, and
+the run reaches the lot again.
+
+The alpha backbuffer theory for the black ground (the game asks for
+A1R5G5B5 and headless gave it X8R8G8B8) was tested with A8R8G8B8 and made no
+difference; reverted.

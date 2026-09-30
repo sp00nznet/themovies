@@ -175,11 +175,13 @@ build\themovies.exe --headless --run --watchdog 120
 py -3 tools\conformance.py        # how far it boots, against conformance.json
 ```
 
-Until pcrecomp #7 and #10 to #15 are merged, use a checkout with all of them
-merged, for both the lifter and the build (they must match):
-`set PCRECOMP=..\pcrecomp-integration` before `run_lift.py`, and
-`set CMAKE_ARGS=-DPCRECOMP=G:/path/to/pcrecomp-integration` before the first
-`build.cmd` (delete `build\` if you change it later).
+pcrecomp `main` has everything except #22 (x87 compares at join points; without
+it the mouse cursor is pinned to a corner and no click lands). Until it merges,
+use its branch for both the lifter and the build (they must match):
+`git -C ..\tools fetch origin fix/lift32-runtime-parity` and check it out, or
+point `PCRECOMP` at another checkout: `set PCRECOMP=..\pcrecomp-parity` before
+`run_lift.py`, and `set CMAKE_ARGS=-DPCRECOMP=G:/path/to/pcrecomp-parity`
+before the first `build.cmd` (delete `build\` if you change it later).
 
 ## Layout
 

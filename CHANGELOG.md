@@ -12,6 +12,10 @@ versions follow [SemVer](https://semver.org/).
   accumulator. It now plays from the main menu into a new studio.
 
 ### Fixed
+- Moving to pcrecomp `main` pinned the cursor to the top-left corner: every
+  x87 compare (`fnstsw ax; test ah, N; jp`) in a function with an unresolved
+  indirect jump took one fixed branch, 274 sites. Fixed in pcrecomp #22; lift
+  with it.
 - DirectInput never started: `DirectInput8Create` got the guest image base
   (0x400000) as its `HINSTANCE` and failed with `E_INVALIDARG`. The host passes
   its own.
