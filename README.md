@@ -87,8 +87,9 @@ game into `game\`, unpacks the executables, analyses them and builds the
 function catalog. A rerun skips the finished steps. If it stops, it says why
 in one sentence, and the details are in `setup.log`.
 
-It ends with `work\` holding the unpacked executables and the catalog. There is
-no game to launch yet, so there is no shortcut.
+It ends with `work\` holding the unpacked executables and the catalog. It stops
+there for now: lifting and building need pcrecomp fixes that are still open
+pull requests (*Building from source*), so it does not make a shortcut yet.
 
 ### Step by step
 
@@ -137,9 +138,18 @@ app settings > App execution aliases*); a freshly installed Python not being on
 
 ## Usage
 
-There is no program to run yet. The pipeline commands are the ones in *Step by
-step*. `emu_unpack.py --selftest` checks the unpacker's IAT picker without
-needing the game.
+After *Building from source*, from the repository root:
+
+```
+build\themovies.exe --headless --run --watchdog 120                          # boot, report, stop
+build\themovies.exe --headless --run --record work\rec\boot.mp4 --frames 3000  # 100 s to the main menu
+build\themovies.exe --help                                                   # every option
+```
+
+`--headless` keeps everything off the screen (a hidden window, a forced
+windowed D3D9 device, message boxes to stderr), so it is safe over RDP.
+Without it the game opens its own window. There is no input yet, so the game
+stops at its main menu.
 
 ## Building from source
 
@@ -183,6 +193,11 @@ themovies/
 Unpacked executables, the RTTI class map and the function catalog are derived
 from the game's binary, so they are never committed. The generated C will not
 be either.
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md): where the gaps are, and why game files
+and lifted code never go in the repo.
 
 ## License
 
