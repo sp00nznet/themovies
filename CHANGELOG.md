@@ -5,7 +5,16 @@ versions follow [SemVer](https://semver.org/).
 
 ## [Unreleased]
 
+### Fixed
+- The main-menu backdrop and the intro videos (Activision logo, title) were
+  black or missing. The lift now uses lift32's precise carry: 64-bit adds and
+  subtracts had a wrong high word, so DirectShow judged every video frame late
+  and dropped it (DoRenderSample 4 -> 1,508 calls in 100 s). And a headless
+  Yes/No/Cancel box answers No rather than OK, which is none of its buttons.
+
 ### Added
+- `--probe VA`: count indirect calls to a VA and show the first five.
+- A conformance milestone for video frames rendered (7/7).
 - P0 reconnaissance: the Steam 1.2 build (app 7900 + 7910) picked as the
   target over the retail discs and the archive.org repack; `MoviesSE.exe`
   identified as MSVC 7.1 and packed. `docs/RECON.md`.

@@ -9,7 +9,7 @@ following its shared house style (layout, CLI, harness, headless mode). It sits
 next to [bw](https://github.com/sp00nznet/bw) and [bw2](https://github.com/sp00nznet/bw2):
 same studio, same years.
 
-## Status: **v0.1.0-dev, P3 bring-up. The whole game is lifted, plays its intro and reaches the main menu.** No input yet; the menu backdrop is black.
+## Status: **v0.1.0-dev, P3 bring-up. The whole game is lifted, plays its full intro (video included) and reaches the main menu.** No input yet.
 
 | Stage | State |
 |---|---|
@@ -30,16 +30,16 @@ is the log of each wall and its fix; most of them were pcrecomp fixes (#5, #7,
 ## Screenshots
 
 Rendered by the recompiled game and recorded headlessly (`--headless
---record`) over RDP. The whole startup, 100 seconds with no input: the Lionhead
-particle intro, the Lionhead logo, the ATI logo, then the main menu.
+--record`) over RDP: the whole startup, 100 seconds with no input. The logos
+and the title are the game's own WMV videos, decoded by DirectShow into the
+game's texture renderer.
 
 | | | |
 |---|---|---|
-| ![Lionhead intro, 1 s](docs/screenshots/lionhead-intro-01s.png) | ![Lionhead intro, 10 s](docs/screenshots/lionhead-intro-10s.png) | ![Lionhead intro, 19 s](docs/screenshots/lionhead-intro-19s.png) |
-| ![Lionhead logo](docs/screenshots/lionhead-logo.png) | ![ATI logo](docs/screenshots/ati-logo.png) | ![Main menu](docs/screenshots/main-menu.png) |
+| ![Lionhead intro](docs/screenshots/lionhead-intro-10s.png) | ![Lionhead logo](docs/screenshots/lionhead-logo.png) | ![Activision logo](docs/screenshots/activision-logo.png) |
+| ![ATI logo](docs/screenshots/ati-logo.png) | ![Countdown](docs/screenshots/countdown.png) | ![Title](docs/screenshots/title-card.png) |
 
-The menu's backdrop is black where the original shows a 3D scene. That is the
-next thing to find out ([ROADMAP.md](ROADMAP.md)).
+![Main menu](docs/screenshots/main-menu.png)
 
 ## What it found so far
 

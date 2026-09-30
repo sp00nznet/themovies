@@ -102,7 +102,13 @@ def main():
 
     # Known targets become RECOMP_CALL; anything else a decoded `call` names
     # becomes RECOMP_ICALL, which reports at run time instead of failing the build.
-    lifter = Lifter(iat_map=iat, lifted=set(byaddr))
+    # precise carry: adc/sbb take their carry from the flag state that set it.
+    # The default reads a `_cf` that add/sub/cmp never write, which breaks
+    # every 64-bit add and subtract -- and DirectShow's REFERENCE_TIME is
+    # nothing but. The menu video's renderer judged all but 4 frames in 100 s
+    # late and dropped them: the black main-menu backdrop (docs/bringup.md).
+    # Off by default in lift32 only because Fury3 leans on the imprecision.
+    lifter = Lifter(iat_map=iat, lifted=set(byaddr), precise_carry=True, precise_sbb=True)
     os.makedirs(args.out, exist_ok=True)
     for fn in os.listdir(args.out):                 # a smaller lift must not leave stale chunks
         if fn.startswith('recomp_') and fn.endswith('.c'):

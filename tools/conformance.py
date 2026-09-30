@@ -38,12 +38,17 @@ MILESTONES = [
     ('D3D9 device created', r'\[headless\] CreateDevice -> 0x00000000'),
     ('first frame presented', r'\[headless\] frame 1 presented'),
     ('100 frames presented', r'\[headless\] frame 100 presented'),
+    # CTextureRenderer::DoRenderSample (0x009EE3B0), counted by --probe. The
+    # intro and menu videos go through it; with 64-bit carries wrong it ran 4
+    # times in 100 s and the menu backdrop was black (docs/bringup.md, 15).
+    ('video frames rendered (100+)', r'\[probe\] sub_009EE3B0: (\d{3,}) calls'),
 ]
 
 
 def boot(seconds):
     try:
-        p = subprocess.run([HOST, '--headless', '--run', '--watchdog', str(seconds)],
+        p = subprocess.run([HOST, '--headless', '--run', '--watchdog', str(seconds),
+                            '--probe', '0x9ee3b0'],
                            cwd=ROOT, capture_output=True, text=True, errors='replace',
                            timeout=seconds + 60)
         out, code = p.stdout + p.stderr, p.returncode

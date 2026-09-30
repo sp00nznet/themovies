@@ -2,9 +2,10 @@
 
 ## Next
 
-1. **The main menu's black backdrop.** The original shows a 3D scene behind the
-   menu; find whether it is not rendered, rendered and lost, or waiting on
-   something (streaming, a thread, a timer).
+1. **Propose precise carry as lift32's default.** The Movies needs it
+   (docs/bringup.md, 15); it is opt-in only because Fury3 leans on the old
+   imprecision. Better as the default with Fury3 opting out, after re-running
+   the titles that use lift32.
 2. **Input.** Scripted clicks and keys for headless runs (`--click x,y@s`,
    `--key vk@s`, gunman's shape) so a recording can go past the menu, and
    conformance milestones past it (a new game, the studio lot).

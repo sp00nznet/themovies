@@ -188,3 +188,33 @@ Recording 3,000 frames (`--record work\rec\long.mp4 --frames 3000`, 100 s at
 the Lionhead logo, the ATI logo, and the S&E main menu with its cursor (README,
 Screenshots). No unresolved ICALL or ITAIL is printed on the way. The menu's
 3D backdrop is missing: black where the original draws a scene.
+
+## 15. The black menu backdrop: 64-bit arithmetic, and a message box
+
+The main menu's backdrop is a video (`data/intro/frontend_loop.wmv`), and so
+are the Activision logo and the title, which were missing too. Two causes:
+
+**The headless message box answered OK to a Yes/No/Cancel question.** The
+"not closed properly last time" prompt (type `0x103`) got `IDOK`, which is
+none of its buttons; the game did not start video at all. It now answers No
+when there is a No (never Yes: that opens the Readme). With that, the video
+player was created, its DirectShow graph built and run:
+`CLSID_FilterGraph`, `CLSID_WMAsfReader`, and the game's own
+`CTextureRenderer@MV`, a DirectX SDK Texture3D-style renderer.
+
+**The renderer threw the frames away.** `--probe` (added for this: count
+indirect calls to a VA) showed the renderer's `Receive` running thousands of
+times and its `DoRenderSample` (`0x009EE3B0`) 4 times in 100 seconds.
+`CBaseVideoRenderer` drops a frame it judges late, and that judgement is
+64-bit `REFERENCE_TIME` arithmetic. lift32's `adc`/`sbb` read a `_cf` that
+`add`/`sub`/`cmp` never write unless the lifter is built with
+`precise_carry=True`, which is off by default for Fury3's sake. So the high
+word of every 64-bit add and subtract was wrong, and every frame was late.
+
+```
+precise_carry off:  [probe] sub_009EE3B0: 4 calls
+precise_carry on:   [probe] sub_009EE3B0: 1508 calls
+```
+
+`run_lift.py` now lifts with `precise_carry=True, precise_sbb=True` (2,591
+`adc`/`sbb` sites), and the whole startup plays: README, Screenshots.

@@ -35,16 +35,25 @@ static int   g_headless;
 #define ARG(n) MEM32(g_esp + 4 + 4 * (n))
 static const char* gstr(uint32_t va) { return va ? (const char*)(uintptr_t)va : "(null)"; }
 
+/* The answer a headless run gives: No where the box has a No button, else OK.
+ * The game's "not closed properly last time" prompt is YES/NO/CANCEL, where
+ * Yes opens the Readme (a browser, on an RDP phone) and Cancel drops the game
+ * to its lowest graphics setting. IDOK is none of the three. */
+static uint32_t mb_answer(uint32_t type) {
+    uint32_t buttons = type & MB_TYPEMASK;
+    return (buttons == MB_YESNO || buttons == MB_YESNOCANCEL) ? IDNO : IDOK;
+}
+
 static void shim_MessageBoxA(void) {
-    fprintf(stderr, "[messagebox] %s: %s\n", gstr(ARG(2)), gstr(ARG(1)));
-    g_eax = IDOK;
+    g_eax = mb_answer(ARG(3));
+    fprintf(stderr, "[messagebox] type 0x%X -> %u: %s: %s\n", ARG(3), g_eax, gstr(ARG(2)), gstr(ARG(1)));
     g_esp += 4 + 4 * 4;
 }
 
 static void shim_MessageBoxW(void) {
-    fprintf(stderr, "[messagebox] %ls: %ls\n", (const wchar_t*)(uintptr_t)ARG(2),
-            (const wchar_t*)(uintptr_t)ARG(1));
-    g_eax = IDOK;
+    g_eax = mb_answer(ARG(3));
+    fprintf(stderr, "[messagebox] type 0x%X -> %u: %ls: %ls\n", ARG(3), g_eax,
+            (const wchar_t*)(uintptr_t)ARG(2), (const wchar_t*)(uintptr_t)ARG(1));
     g_esp += 4 + 4 * 4;
 }
 
@@ -286,7 +295,27 @@ static native32_shim_t g_headless_shims[] = {
     { "ShowWindow", shim_ShowWindow },
 };
 
-recomp_func_t recomp_lookup_manual(uint32_t va) { (void)va; return NULL; }
+/* --probe VA (repeatable): report indirect calls to VA -- a virtual method or
+ * callback -- with `this` and the first arguments. RECOMP_ICALL asks this
+ * hook before the dispatch table, so it costs nothing when unset. */
+#define MAX_PROBES 8
+static uint32_t g_probe[MAX_PROBES];
+static int g_nprobe;
+
+static volatile LONG g_probe_hits[MAX_PROBES];
+
+recomp_func_t recomp_lookup_manual(uint32_t va) {
+    for (int i = 0; i < g_nprobe; i++)
+        if (g_probe[i] == va && InterlockedIncrement(&g_probe_hits[i]) <= 5)
+            fprintf(stderr, "[probe] sub_%08X from sub_%08X  ecx=%08X  args %08X %08X %08X\n",
+                    va, g_cur_func, g_ecx, MEM32(g_esp), MEM32(g_esp + 4), MEM32(g_esp + 8));
+    return NULL;
+}
+
+static void probe_report(void) {
+    for (int i = 0; i < g_nprobe; i++)
+        fprintf(stderr, "[probe] sub_%08X: %ld calls\n", g_probe[i], g_probe_hits[i]);
+}
 
 void recomp_not_lifted(uint32_t va) {
     fprintf(stderr,
@@ -355,6 +384,7 @@ static DWORD WINAPI watchdog(LPVOID unused) {
     fprintf(stderr, "\n[watchdog] %lu s: in sub_%08X, last native call %s, %u indirect calls\n",
             g_watchdog_s, g_cur_func, g_cur_import, g_icall_count);
     native32_dump_icalls(8);
+    probe_report();
     record_close();
     fflush(stderr);
     TerminateProcess(GetCurrentProcess(), 4);
@@ -372,6 +402,8 @@ int main(int argc, char** argv) {
         if (!strcmp(argv[i], "--run")) run = 1;
         else if (!strcmp(argv[i], "--headless")) g_headless = 1;
         else if (!strcmp(argv[i], "--simd")) g_simd = 1;
+        else if (!strcmp(argv[i], "--probe") && i + 1 < argc && g_nprobe < MAX_PROBES)
+            g_probe[g_nprobe++] = strtoul(argv[++i], NULL, 0);
         else if (!strcmp(argv[i], "--record") && i + 1 < argc) g_record = argv[++i];
         else if (!strcmp(argv[i], "--frames") && i + 1 < argc) g_record_frames = strtol(argv[++i], NULL, 0);
         else if (!strcmp(argv[i], "--exe") && i + 1 < argc) exe = argv[++i];
