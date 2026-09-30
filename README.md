@@ -9,7 +9,7 @@ following its shared house style (layout, CLI, harness, headless mode). It sits
 next to [bw](https://github.com/sp00nznet/bw) and [bw2](https://github.com/sp00nznet/bw2):
 same studio, same years.
 
-## Status: **v0.1.0-dev, P3 bring-up. The whole game is lifted, plays its full intro (video included) and reaches the main menu.** No input yet.
+## Status: **v0.1.0-dev, P3 bring-up. The whole game is lifted, plays its full intro (video included) and reaches the main menu, and scripted input plays it into a new studio.**
 
 | Stage | State |
 |---|---|
@@ -21,6 +21,7 @@ same studio, same years.
 | Lift (`run_lift.py --all`) | 83,468 functions, 9.8M lines of C, **0 lift errors**, 10 unresolvable ITAIL labels (none in a real function) |
 | Host (`build/themovies.exe`, 32-bit, pcrecomp `native32`) | **boots**: CRT, `WinMain`, localized text, hidden window, D3D9 device, worker threads ([host.md](docs/host.md), [bringup.md](docs/bringup.md)) |
 | Headless mode | `--headless --record out.mp4 --frames N`: hidden window, forced-windowed D3D9, every frame read back and piped to ffmpeg |
+| Scripted input | `--move x,y@s`, `--click x,y@s`, `--key vk@s` (s = seconds of recording): DirectInput 8 and the Win32 cursor calls answered from the script, so a headless run can play |
 | Conformance harness | `tools/conformance.py`: boot milestones and lift health against `conformance.json`; fails on regression |
 
 Every stage above has its real output in `docs/`. [bringup.md](docs/bringup.md)
@@ -40,6 +41,12 @@ game's texture renderer.
 | ![ATI logo](docs/screenshots/ati-logo.png) | ![Countdown](docs/screenshots/countdown.png) | ![Title](docs/screenshots/title-card.png) |
 
 ![Main menu](docs/screenshots/main-menu.png)
+
+Then, scripted: Game, Quick Start, create the studio, and the first year on the lot.
+
+| | |
+|---|---|
+| ![Create your studio](docs/screenshots/create-studio.png) | ![In game](docs/screenshots/in-game.png) |
 
 ## What it found so far
 
@@ -143,13 +150,16 @@ After *Building from source*, from the repository root:
 ```
 build\themovies.exe --headless --run --watchdog 120                          # boot, report, stop
 build\themovies.exe --headless --run --record work\rec\boot.mp4 --frames 3000  # 100 s to the main menu
+build\themovies.exe --headless --run --record work\rec\game.mp4 --frames 7200 ^
+  --move 700,200@112 --click 150,316@116 --click 200,563@130 --click 676,604@160   # into a new studio
 build\themovies.exe --help                                                   # every option
 ```
 
 `--headless` keeps everything off the screen (a hidden window, a forced
 windowed D3D9 device, message boxes to stderr), so it is safe over RDP.
-Without it the game opens its own window. There is no input yet, so the game
-stops at its main menu.
+Without it the game opens its own window. With no script the game stops at its
+main menu; the clicks above are Game, Quick Start and the studio screen's tick,
+in 1024x768 client pixels, at seconds of recording (30 frames a second).
 
 ## Building from source
 

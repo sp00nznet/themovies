@@ -218,3 +218,41 @@ precise_carry on:   [probe] sub_009EE3B0: 1508 calls
 
 `run_lift.py` now lifts with `precise_carry=True, precise_sbb=True` (2,591
 `adc`/`sbb` sites), and the whole startup plays: README, Screenshots.
+
+## 16. Input: into the game
+
+With the menu up, the next wall was playing it headless: no window is ever
+foreground and nothing moves the real mouse. `src/runtime/input.c` scripts
+it (`--move`, `--click`, `--key`, timed in seconds of recording).
+
+**The game had no DirectInput at all.** `DirectInput8Create` takes an
+`HINSTANCE`, and the game passes its own module handle, which the guest
+identity shims report as `0x400000`: not a module in the host process, so
+`E_INVALIDARG`, silently. The hook passes the host's instead. Then the
+devices: `SetCooperativeLevel` and `Acquire` always succeed (they would fail
+for a hidden window) and `GetDeviceState`/`GetDeviceData` answer from the
+script, never the hardware.
+
+**Clicks landed at once; the cursor would not move.** Posted `WM_MOUSEMOVE`
+does nothing: the game's cursor moves by DirectInput motion alone.
+`0x00554490` adds each delta times a sensitivity (float `0x00E52CA8`, 1.5) to
+an accumulator (floats `0x0104CCF0/F4`) and draws the cursor at its floor.
+Deltas computed from the drawn cursor's centre snapped it to the edge,
+because the menu seeds the accumulator with 32.0, not the centre.
+`GetCursorPos` only seeds it once per focus gain (`0x005550B0`, gated by a
+flag at `0x00E52C9C`), which a hidden window never has.
+
+So the steering is closed-loop: once per frame the mouse reports the rest of
+the way from the game's accumulator to the target. One more trap: the game
+re-centres the Windows cursor with `SetCursorPos` every frame it moves, and
+the shim took that as the new target, so the cursor walked straight back.
+`SetCursorPos` now leaves the target alone.
+
+```
+--move 700,200@112 --click 150,316@116   Game
+--click 200,563@130                      Quick Start
+--click 676,604@160                      tick on Create Your Studio
+```
+
+The lot comes up at t=165 s and the calendar runs (Jan to Apr 1960 by
+t=300). Visible next: parts of the backdrop past the lot render black.

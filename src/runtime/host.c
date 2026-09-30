@@ -20,6 +20,7 @@
 
 #include "native32.h"
 #include "recomp_trace.h"
+#include "input.h"
 
 extern const uint32_t tm_entry_va;     /* recomp_dispatch.c */
 
@@ -67,6 +68,7 @@ static void shim_CreateWindowExA(void) {
                              (HINSTANCE)(uintptr_t)ARG(10), (LPVOID)(uintptr_t)ARG(11));
     fprintf(stderr, "[headless] CreateWindowExA(\"%s\", %dx%d) from sub_%08X -> hidden hwnd %p\n",
             gstr(ARG(2)), (int)ARG(6), (int)ARG(7), g_cur_func, (void*)h);
+    g_game_hwnd = h;
     g_eax = (uint32_t)(uintptr_t)h;
     g_esp += 4 + 12 * 4;
 }
@@ -92,7 +94,7 @@ static d3dcreate9_t g_real_d3dcreate9;
 typedef HRESULT (WINAPI *present_t)(void* self, const RECT* src, const RECT* dst, HWND wnd,
                                     const RGNDATA* dirty);
 static present_t g_real_present;
-static volatile LONG g_frames;
+volatile LONG g_frames;          /* input.c times its script from the first */
 
 /* --record out.mp4: every presented frame, read back and piped to ffmpeg as
  * raw BGRX. Nothing is shown anywhere, so it works over RDP (REPO_RULES 10/13).
@@ -215,6 +217,7 @@ static void shim_GetProcAddress(void) {
         g_real_d3dcreate9 = (d3dcreate9_t)p;
         p = (FARPROC)hl_Direct3DCreate9;
     }
+    else if (p && ARG(1) >> 16) p = input_wrap_proc(name, p);
     g_eax = (uint32_t)(uintptr_t)p;
     g_esp += 4 + 2 * 4;
 }
@@ -312,6 +315,32 @@ recomp_func_t recomp_lookup_manual(uint32_t va) {
     return NULL;
 }
 
+/* --watch32 ADDR: sample one guest dword every 10 ms and log each change
+ * (the first 100), from a host thread. Unlike recomp_trace's --poison it needs
+ * no RECOMP_TRACE build; the price is that a change between samples is lost. */
+static uint32_t g_watch32, g_watch32_ptr, g_watch32_off;   /* *PTR+OFF form */
+
+static DWORD WINAPI watch32(LPVOID unused) {
+    uint32_t last = 0, n = 0;
+    DWORD t0 = GetTickCount();
+    (void)unused;
+    while (n < 100) {
+        MEMORY_BASIC_INFORMATION mbi;
+        if (g_watch32_ptr) g_watch32 = MEM32(g_watch32_ptr) ? MEM32(g_watch32_ptr) + g_watch32_off : 0;
+        if (g_watch32 && VirtualQuery((void*)(uintptr_t)g_watch32, &mbi, sizeof mbi) && mbi.State == MEM_COMMIT) {
+            uint32_t v = MEM32(g_watch32);
+            if (v != last) {
+                fprintf(stderr, "[watch32] %6.2fs frame %ld [%08X] %08X -> %08X (%d)\n",
+                        (GetTickCount() - t0) / 1000.0, g_frames, g_watch32, last, v, (int32_t)v);
+                last = v;
+                n++;
+            }
+        }
+        Sleep(10);
+    }
+    return 0;
+}
+
 static void probe_report(void) {
     for (int i = 0; i < g_nprobe; i++)
         fprintf(stderr, "[probe] sub_%08X: %ld calls\n", g_probe[i], g_probe_hits[i]);
@@ -385,6 +414,7 @@ static DWORD WINAPI watchdog(LPVOID unused) {
             g_watchdog_s, g_cur_func, g_cur_import, g_icall_count);
     native32_dump_icalls(8);
     probe_report();
+    input_report();
     record_close();
     fflush(stderr);
     TerminateProcess(GetCurrentProcess(), 4);
@@ -398,10 +428,19 @@ int main(int argc, char** argv) {
     int run = 0;
     for (int i = 1; i < argc; i++) {
         int n = recomp_trace_arg(argc, argv, i);
+        if (!n) n = input_arg(argc, argv, i);
         if (n) { i += n - 1; continue; }
         if (!strcmp(argv[i], "--run")) run = 1;
         else if (!strcmp(argv[i], "--headless")) g_headless = 1;
         else if (!strcmp(argv[i], "--simd")) g_simd = 1;
+        else if (!strcmp(argv[i], "--watch32") && i + 1 < argc) {
+            const char* w = argv[++i];          /* ADDR, or *PTR+OFF to follow a pointer */
+            if (*w == '*') {
+                char* e;
+                g_watch32_ptr = strtoul(w + 1, &e, 0);
+                g_watch32_off = *e == '+' ? strtoul(e + 1, NULL, 0) : 0;
+            } else g_watch32 = strtoul(w, NULL, 0);
+        }
         else if (!strcmp(argv[i], "--probe") && i + 1 < argc && g_nprobe < MAX_PROBES)
             g_probe[g_nprobe++] = strtoul(argv[++i], NULL, 0);
         else if (!strcmp(argv[i], "--record") && i + 1 < argc) g_record = argv[++i];
@@ -412,7 +451,7 @@ int main(int argc, char** argv) {
         else if (!strcmp(argv[i], "--native-trace")) native32_trace_native = 1;
         else if (!strcmp(argv[i], "--callbacks")) native32_trace_callbacks = 1;
         else {
-            printf("usage: themovies [--run] [--headless] [--record out.mp4] [--frames N] [--simd] [--exe work\\MoviesSE.unpacked.exe] [--game game]\n"
+            printf("usage: themovies [--run] [--headless] [--record out.mp4] [--frames N] [--move x,y@s] [--click x,y@s] [--key vk@s] [--simd] [--exe work\\MoviesSE.unpacked.exe] [--game game]\n"
                    "                 [--watchdog S] [--native-trace] [--callbacks]\n");
             recomp_trace_help();
             return argv[i][1] == 'h' || argv[i][2] == 'h' ? 0 : 1;
@@ -439,10 +478,15 @@ int main(int argc, char** argv) {
     uint32_t span = native32_map(exe_full, TM_IMAGE_BASE);
     if (!span) { fprintf(stderr, "cannot map %s at 0x%08X\n", exe_full, TM_IMAGE_BASE); return 1; }
     printf("  mapped %s: 0x%08X-0x%08X\n", exe, TM_IMAGE_BASE, TM_IMAGE_BASE + span);
-    if (g_headless ? native32_bind(TM_IMAGE_BASE, g_headless_shims,
-                                   (int)(sizeof g_headless_shims / sizeof g_headless_shims[0]))
-                   : native32_bind(TM_IMAGE_BASE, g_shims, (int)(sizeof g_shims / sizeof g_shims[0])))
+    if (g_headless) {                  /* headless also takes the scripted-input shims */
+        int nh = (int)(sizeof g_headless_shims / sizeof g_headless_shims[0]);
+        native32_shim_t* all = (native32_shim_t*)calloc(nh + INPUT_NSHIMS, sizeof *all);
+        memcpy(all, g_headless_shims, sizeof g_headless_shims);
+        memcpy(all + nh, g_input_shims, sizeof g_input_shims);
+        if (native32_bind(TM_IMAGE_BASE, all, nh + INPUT_NSHIMS)) return 1;
+    } else if (native32_bind(TM_IMAGE_BASE, g_shims, (int)(sizeof g_shims / sizeof g_shims[0]))) {
         return 1;
+    }
     printf("  guest exe %s\n", g_guest_exe);
 
     if (!run) {
@@ -452,6 +496,8 @@ int main(int argc, char** argv) {
     /* The game opens Data\ relative to its working directory, like the original. */
     if (!SetCurrentDirectoryA(game)) { fprintf(stderr, "cannot enter %s\n", game); return 1; }
     if (g_watchdog_s) CloseHandle(CreateThread(NULL, 0, watchdog, NULL, 0, NULL));
+    input_start();
+    if (g_watch32 || g_watch32_ptr) CloseHandle(CreateThread(NULL, 0, watch32, NULL, 0, NULL));
     printf("  entering 0x%08X\n\n", tm_entry_va);
     fflush(stdout);
     native32_call_guest(tm_entry_va, 0, NULL);

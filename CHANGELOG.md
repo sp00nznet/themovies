@@ -5,6 +5,17 @@ versions follow [SemVer](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- Scripted input for headless runs: `--move x,y@s`, `--click x,y@s`,
+  `--key vk@s`. DirectInput 8 devices and the Win32 cursor/key calls answer
+  from the script. The game's cursor is steered closed-loop from its own
+  accumulator. It now plays from the main menu into a new studio.
+
+### Fixed
+- DirectInput never started: `DirectInput8Create` got the guest image base
+  (0x400000) as its `HINSTANCE` and failed with `E_INVALIDARG`. The host passes
+  its own.
+
 ### Fixed
 - The main-menu backdrop and the intro videos (Activision logo, title) were
   black or missing. The lift now uses lift32's precise carry: 64-bit adds and
